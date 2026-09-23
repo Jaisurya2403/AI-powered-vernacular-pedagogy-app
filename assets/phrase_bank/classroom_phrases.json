@@ -1,0 +1,98 @@
+{
+  "version": "1.0.0",
+  "language_pairs": [
+    "santhali",
+    "ho",
+    "mundari"
+  ],
+  "phrases": [
+    {
+      "id": "p001",
+      "category": "Greetings",
+      "hindi": "नमस्ते बच्चों, आप सब कैसे हैं?",
+      "english": "Hello children, how are you all?",
+      "santhali": "ᱡᱚᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ, ᱟᱯᱮ ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟ ᱯᱮᱭᱟ?",
+      "santhali_devanagari": "जोहार गिद्र को, आपे चेद लेका मेना पेया?",
+      "ho": "ᱡᱚᱦᱟᱨ ᱦᱚᱸ, ᱟᱯᱮ ᱪᱤᱞᱠᱟ?",
+      "mundari": "जोहार होन् को, आपे चिलका मेना पेया?",
+      "phonetic": "Johar gidra ko, ape ched leka mena peya?"
+    },
+    {
+      "id": "p002",
+      "category": "Instruction",
+      "hindi": "आज हम गणित सीखेंगे।",
+      "english": "Today we will learn mathematics.",
+      "santhali": "ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱞᱮᱠᱷᱟ ᱵᱚᱱ ᱪᱮᱫᱟ᱾",
+      "santhali_devanagari": "तेहेञ आबो लेखा बोन चेदा।",
+      "ho": "ᱛᱮᱦᱤᱧ ᱟᱵᱳ ᱞᱮᱠᱷᱟ ᱵᱳ ᱪᱮᱫᱳᱣᱟ᱾",
+      "mundari": "तेइञ आबू लेखा अबु चेदा।",
+      "phonetic": "Tehenj abo lekha bon cheda."
+    },
+    {
+      "id": "p003",
+      "category": "Instruction",
+      "hindi": "अपनी किताब खोलो।",
+      "english": "Open your book.",
+      "santhali": "ᱟᱯᱱᱟᱨᱟᱜ ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡᱽ ᱢᱮ᱾",
+      "santhali_devanagari": "अपनाराग पुथि झिज मे।",
+      "ho": "ᱟᱯᱱᱟᱨ ᱯᱩᱛᱷᱤ ᱯᱟᱲᱟᱣ ᱢᱮ᱾",
+      "mundari": "अपना पथी झिज मे।",
+      "phonetic": "Apnarag puthi jhij me."
+    },
+    {
+      "id": "p004",
+      "category": "Mathematics",
+      "hindi": "एक से दस तक गिनती करो।",
+      "english": "Count from one to ten.",
+      "santhali": "ᱢᱤᱫ ᱠᱷᱚᱱ ᱜᱮᱞ ᱦᱟᱹᱵᱤᱡ ᱞᱮᱠᱷᱟᱭ ᱢᱮ᱾",
+      "santhali_devanagari": "मिद खोन गेल हबिज लेखाय मे।",
+      "ho": "ᱢᱤᱭᱟᱹᱫᱽ ᱠᱷᱚᱱ ᱜᱮᱞ ᱞᱮᱠᱷᱟ ᱢᱮ᱾",
+      "mundari": "मियाद एते गेल हबिज लेखा मे।",
+      "phonetic": "Mid khon gel habij lekhay me."
+    },
+    {
+      "id": "p005",
+      "category": "Science",
+      "hindi": "यह पौधा पानी और धूप से बढ़ता है।",
+      "english": "This plant grows with water and sunlight.",
+      "santhali": "ᱱᱚᱣᱟ ᱫᱟᱨᱮ ᱫᱟᱜ ᱟᱨ ᱥᱤᱛᱩᱝ ᱛᱮ ᱦᱟᱨᱟ ᱟ᱾",
+      "santhali_devanagari": "नवा दारे दाग आर सितुंग ते हाराग-आ।",
+      "ho": "ᱱᱮᱭᱟ ᱫᱟᱨᱩ ᱫᱟᱜ ᱟᱨ ᱥᱤᱛᱩᱝ ᱛᱮ ᱞᱟᱨᱟᱣᱟ᱾",
+      "mundari": "नेया दारु दाः आर सितुंग ते हारा ओगोःआ।",
+      "phonetic": "Nawa dare dag ar situng te haraga."
+    },
+    {
+      "id": "p006",
+      "category": "Question",
+      "hindi": "क्या आपको समझ आया?",
+      "english": "Did you understand?",
+      "santhali": "ᱪᱮᱫ ᱟᱯᱮ ᱯᱮ ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟ?",
+      "santhali_devanagari": "चेद आपे पे बुझौ केदा?",
+      "ho": "ᱪᱤ ᱟᱯᱮ ᱯᱮ ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟ?",
+      "mundari": "चि आपे पे बुझौ केदा?",
+      "phonetic": "Ched ape pe bujhau keda?"
+    },
+    {
+      "id": "p007",
+      "category": "Instruction",
+      "hindi": "शाबाश! बहुत बढ़िया।",
+      "english": "Well done! Very good.",
+      "santhali": "ᱥᱟᱵᱟᱥ! ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ᱾",
+      "santhali_devanagari": "शाबास! अड़ि नापाय।",
+      "ho": "ᱥᱟᱵᱟᱥ! ᱟᱹᱰᱤ ᱵᱩᱜᱤ᱾",
+      "mundari": "शाबास! पुरउ बोगी।",
+      "phonetic": "Sabas! Adi napay."
+    },
+    {
+      "id": "p008",
+      "category": "Daily Life",
+      "hindi": "साफ पानी पीना चाहिए।",
+      "english": "We should drink clean water.",
+      "santhali": "ᱥᱟᱯᱷᱟ ᱫᱟᱜ ᱧᱩ ᱞᱟᱹᱠᱛᱤ ᱟ᱾",
+      "santhali_devanagari": "साफा दाग ञु लाकति आ।",
+      "ho": "ᱥᱟᱯᱷᱟ ᱫᱟᱜ ᱧᱩ ᱟ᱾",
+      "mundari": "साफा दाः णु लेका आ।",
+      "phonetic": "Sapha dag nju lakti a."
+    }
+  ]
+}
