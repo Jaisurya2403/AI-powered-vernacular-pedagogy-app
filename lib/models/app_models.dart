@@ -65,6 +65,10 @@ class TranslationResult {
     required this.latencyMs,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
+
+  bool get isOriginalSantali {
+    return RegExp(r'[\u1C50-\u1C7F]').hasMatch(originalText);
+  }
 }
 
 class PhraseItem {

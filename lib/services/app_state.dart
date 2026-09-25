@@ -270,13 +270,18 @@ class AppState extends ChangeNotifier {
       // Synthesize Tribal Audio immediately upon translation to Santali
       await speechService.speakTribalText(result.translatedText, _targetLanguage);
     } else {
-      // Student speaks Tribal language -> Output Hindi for teacher
+      // Student speaks Tribal (Santali) -> Real Reverse Translation to Hindi for Teacher!
+      final step2Res = TranslatorManager().translator.translateReverse(inputText);
+      final translatedHindi = step2Res.santaliText.isNotEmpty ? step2Res.santaliText : inputText;
+
       result = TranslationResult(
         originalText: inputText,
-        translatedText: 'शिक्षक ध्यान दें: विद्यार्थी प्रश्न: "$inputText"',
+        translatedText: translatedHindi,
         language: _targetLanguage,
-        source: TranslationSource.astarSearch,
-        latencyMs: 18.2,
+        source: step2Res.method == 'exact'
+            ? TranslationSource.phraseBank
+            : TranslationSource.astarSearch,
+        latencyMs: step2Res.latencyMs,
       );
 
       await speechService.speakHindiText(result.translatedText);

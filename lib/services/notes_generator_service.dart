@@ -74,8 +74,11 @@ class NotesGeneratorService {
       for (int i = 0; i < sessionLogs.length; i++) {
         final log = sessionLogs[i];
         final sentenceIndex = i + 1;
-        buffer.writeln('$sentenceIndex. Hindi   : ${log.originalText}');
-        buffer.writeln('   Santhali: ${log.translatedText}');
+        final isSantali = log.isOriginalSantali;
+        final srcLabel = isSantali ? 'Santhali' : 'Hindi   ';
+        final tgtLabel = isSantali ? 'Hindi   ' : 'Santhali';
+        buffer.writeln('$sentenceIndex. $srcLabel: ${log.originalText}');
+        buffer.writeln('   $tgtLabel: ${log.translatedText}');
         buffer.writeln('--------------------------------------------------------------------------------');
       }
     }
@@ -100,17 +103,26 @@ class NotesGeneratorService {
     // SECTION 4: STUDENT REVISION WORKSHEET & PRACTICE EXERCISES
     buffer.writeln('4. STUDENT REVISION WORKSHEET & PRACTICE EXERCISES');
     buffer.writeln('--------------------------------------------------------------------------------');
-    buffer.writeln('Exercise 1: Vocabulary Matching & Recall');
-    buffer.writeln('  Q1. What is the Santhali word for "Water" (पानी)?');
-    buffer.writeln('      Ans: ᱫᱟᱜ (Dag / दाग)');
-    buffer.writeln('  Q2. What is the Santhali word for "Book" (किताब)?');
-    buffer.writeln('      Ans: ᱯᱩᱛᱷᱤ (Puthi / पुथि)');
-    buffer.writeln('  Q3. Translate "Open your book" (अपनी किताब खोलो) into Santhali.');
-    buffer.writeln('      Ans: ᱟᱯᱱᱟᱨᱟ ᱯᱩᱛᱷᱤ ᱡᱷᱤ ᱢᱮ᱾\n');
-
-    buffer.writeln('Exercise 2: Oral Practice & Counting');
-    buffer.writeln('  • Practice pronouncing numbers 1 to 10 in Santhali:');
-    buffer.writeln('    1: ᱢᱤᱫ (Mid) | 2: ᱵᱟᱨ (Bar) | 3: ᱯᱮ (Pe) | 4: ᱯᱳᱱ (Pon) | 5: ᱢᱚᱬᱮ (Mone) | 10: ᱜᱮᱞ (Gel)\n');
+    if (sessionLogs.isEmpty) {
+      buffer.writeln('[Not enough classroom data to generate dynamic worksheets.]\n');
+    } else {
+      buffer.writeln('Instructions: Translate the following phrases discussed in class.\n');
+      
+      int qNum = 1;
+      // Generate up to 5 questions based on actual session logs
+      final questions = sessionLogs.take(5).toList();
+      for (final log in questions) {
+        final isSantali = log.isOriginalSantali;
+        final sourceLang = isSantali ? 'Santhali' : 'Hindi';
+        final targetLang = isSantali ? 'Hindi' : 'Santhali';
+        
+        buffer.writeln('Q$qNum. Translate this $sourceLang phrase into $targetLang:');
+        buffer.writeln('"${log.originalText}"');
+        // Gap for the student to write the answer (question then gap then question)
+        buffer.writeln('\n\n\n'); 
+        qNum++;
+      }
+    }
 
     buffer.writeln('================================================================================');
     buffer.writeln('   Generated automatically by Vernacular Pedagogy - Vernacular Bridge System    ');
@@ -141,11 +153,37 @@ class NotesGeneratorService {
       return File(fileName);
     }
 
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getPublicDownloadsDirectory();
     final file = File('${directory.path}/$fileName');
 
     await file.writeAsString(content);
     return file;
+  }
+
+  /// Returns the public Downloads directory on Android mobile & Desktop platforms
+  static Future<Directory> getPublicDownloadsDirectory() async {
+    if (!kIsWeb) {
+      if (Platform.isAndroid) {
+        final androidDownloadDir = Directory('/storage/emulated/0/Download');
+        if (await androidDownloadDir.exists()) {
+          return androidDownloadDir;
+        } else {
+          try {
+            await androidDownloadDir.create(recursive: true);
+            return androidDownloadDir;
+          } catch (_) {}
+        }
+      }
+      try {
+        final downloadsDir = await getDownloadsDirectory();
+        if (downloadsDir != null) {
+          return downloadsDir;
+        }
+      } catch (e) {
+        debugPrint('[NotesGeneratorService] getDownloadsDirectory failed: $e');
+      }
+    }
+    return await getApplicationDocumentsDirectory();
   }
 
   static Future<File> downloadBilingualNotesDocx({
@@ -183,7 +221,7 @@ class NotesGeneratorService {
       return File(fileName);
     }
 
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getPublicDownloadsDirectory();
     final file = File('${directory.path}/$fileName');
 
     await file.writeAsString(content);
@@ -205,7 +243,7 @@ class NotesGeneratorService {
       return File(_activeLiveTxtPath!);
     }
 
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getPublicDownloadsDirectory();
     final file = File('${directory.path}/Live_Hindi_Classroom_Notes.txt');
     _activeLiveTxtPath = file.path;
 
@@ -266,8 +304,11 @@ Target Vernacular Language: ${targetLanguage.displayName}
     buffer.writeln('--------------------------------------------------------------------------------');
     for (int i = 0; i < sessionLogs.length; i++) {
       final log = sessionLogs[i];
-      buffer.writeln('${i + 1}. Hindi   : ${log.originalText}');
-      buffer.writeln('   ${targetLanguage.displayName}: ${log.translatedText}');
+      final isSantali = log.isOriginalSantali;
+      final srcLabel = isSantali ? 'Santhali' : 'Hindi';
+      final tgtLabel = isSantali ? 'Hindi' : targetLanguage.displayName;
+      buffer.writeln('${i + 1}. $srcLabel: ${log.originalText}');
+      buffer.writeln('   $tgtLabel: ${log.translatedText}');
       buffer.writeln('--------------------------------------------------------------------------------');
     }
 
@@ -279,7 +320,7 @@ Target Vernacular Language: ${targetLanguage.displayName}
       return File(fileName);
     }
 
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getPublicDownloadsDirectory();
     final file = File('${directory.path}/$fileName');
     await file.writeAsString(content, flush: true);
     return file;
@@ -289,7 +330,7 @@ Target Vernacular Language: ${targetLanguage.displayName}
     _activeLiveTxtPath = null;
     if (!kIsWeb) {
       try {
-        final directory = await getApplicationDocumentsDirectory();
+        final directory = await getPublicDownloadsDirectory();
         final file = File('${directory.path}/Live_Hindi_Classroom_Notes.txt');
         if (await file.exists()) {
           await file.delete();

@@ -10,4 +10,6 @@ abstract class WebSpeechHelper {
       speakWebUtterance(text);
     }
   }
+
+  static bool get isWebSpeechPlaying => kIsWeb && isWebSpeechActive();
 }

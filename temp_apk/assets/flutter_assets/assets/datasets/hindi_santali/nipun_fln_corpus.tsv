@@ -1,0 +1,15 @@
+id	category	hindi	santali_olchiki	english	verification_status
+101	NIPUN_MATH	गणित	ᱞᱮᱠᱷᱟ (लेखा)	Mathematics	verified
+102	NIPUN_READING	किताब	ᱯᱩᱛᱷᱤ (पुथि)	Book	verified
+103	NIPUN_SCIENCE	पौधा	ᱫᱟᱨᱮ (दारे)	Plant	verified
+104	NIPUN_SCIENCE	पानी	ᱫᱟᱜ (दाग)	Water	verified
+105	NIPUN_MATH	एक	ᱢᱤᱫ (मिद)	One	verified
+106	NIPUN_MATH	दो	ᱵᱟᱨ (बार)	Two	verified
+107	NIPUN_MATH	तीन	ᱯᱮ (पे)	Three	verified
+108	NIPUN_MATH	चार	ᱯᱳᱱ (पोन)	Four	verified
+109	NIPUN_MATH	पांच	ᱢᱚᱬᱮ (मोणे)	Five	verified
+110	NIPUN_MATH	दस	ᱜᱮᱞ (गेल)	Ten	verified
+111	NIPUN_GEN	साफ	ᱥᱟᱯᱷᱟ (साफा)	Clean	verified
+112	NIPUN_GEN	स्कूल	ᱤᱛᱩᱱ ᱟᱥᱲᱟ (इतुन असड़ा)	School	verified
+113	NIPUN_GEN	शिक्षक	ᱢᱟᱪᱮᱛ (माचेत)	Teacher	verified
+114	NIPUN_GEN	छात्र	ᱪᱮᱛᱮᱫᱤᱭᱟᱹ (चेतेदिया)	Student	verified

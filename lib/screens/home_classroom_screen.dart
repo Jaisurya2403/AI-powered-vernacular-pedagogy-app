@@ -29,6 +29,15 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
     "साफ पानी पीना चाहिए।",
   ];
 
+  final List<String> _quickStudentPhrases = [
+    "ᱡᱚᱦᱟᱨ ᱜᱚᱝᱠᱮ (Johar - Hello Teacher)",
+    "ᱞᱮᱠᱷᱟ ᱤᱧ ᱵᱟᱰᱟᱭᱟ (I know math)",
+    "ᱯᱩᱛᱷᱤ ᱤᱧ ᱡᱷᱤ ᱠᱮᱫᱟ (I opened book)",
+    "ᱫᱟᱜ ᱤᱧ ᱧᱩᱭᱟ? (Can I drink water?)",
+    "ᱢᱤᱫ, ᱵᱟᱨ, ᱯᱮ, ᱯᱳᱱ (1, 2, 3, 4)",
+    "ᱤᱧ ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟ (I understood)",
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -509,137 +518,275 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
 
           const SizedBox(height: 20),
 
-          // Explicit Enable/Disable Continuous Mic Control Card
+          // Professional Studio Recorder UI Deck
           Builder(
             builder: (context) {
               final isHardwareMic = speechService.isHardwareMicListening;
 
               return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.all(16),
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: isListening ? Colors.red.shade900 : AppTheme.lightCream,
-                  borderRadius: BorderRadius.circular(20),
+                  gradient: isListening
+                      ? LinearGradient(
+                          colors: [
+                            const Color(0xFF1E0305),
+                            Colors.red.shade900,
+                            const Color(0xFF2D0509),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : const LinearGradient(
+                          colors: [
+                            AppTheme.lightCream,
+                            Color(0xFFFFF7EA),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isListening
-                        ? (isHardwareMic ? Colors.lightGreenAccent : Colors.amber.shade300)
+                        ? (isHardwareMic ? Colors.redAccent : Colors.amber)
                         : AppTheme.borderSubtle,
-                    width: isListening ? 2 : 1,
+                    width: isListening ? 2 : 1.5,
                   ),
                   boxShadow: isListening
                       ? [
                           BoxShadow(
-                            color: (isHardwareMic ? Colors.red.shade600 : Colors.amber.shade700).withValues(alpha: 0.4),
-                            blurRadius: 18,
-                            spreadRadius: 2,
+                            color: (isHardwareMic ? Colors.red.shade700 : Colors.amber.shade700).withValues(alpha: 0.35),
+                            blurRadius: 22,
+                            spreadRadius: 3,
+                            offset: const Offset(0, 8),
                           )
                         ]
-                      : [],
+                      : [
+                          const BoxShadow(
+                            color: Color(0x10800000),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          )
+                        ],
                 ),
                 child: Column(
                   children: [
+                    // Top Studio Console Bar: Status LED & Master Switch
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ScaleTransition(
-                          scale: isListening ? Tween(begin: 0.88, end: 1.12).animate(_pulseController) : const AlwaysStoppedAnimation(1.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: isListening
-                                  ? (isHardwareMic ? Colors.red.shade600 : Colors.amber.shade800)
-                                  : AppTheme.deepCrimson,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              isListening ? Icons.mic : Icons.mic_off_outlined,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
+                        Row(
+                          children: [
+                            AnimatedBuilder(
+                              animation: _pulseController,
+                              builder: (context, child) {
+                                final glow = isListening ? (0.6 + 0.4 * _pulseController.value) : 1.0;
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: isListening
+                                        ? (isHardwareMic
+                                            ? Colors.red.shade900.withValues(alpha: glow)
+                                            : Colors.amber.shade900.withValues(alpha: glow))
+                                        : AppTheme.cardWhite,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
                                       color: isListening
-                                          ? (isHardwareMic ? Colors.lightGreenAccent : Colors.amberAccent)
-                                          : Colors.grey,
-                                      shape: BoxShape.circle,
+                                          ? (isHardwareMic ? Colors.redAccent : Colors.amberAccent)
+                                          : AppTheme.borderSubtle,
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      isListening
-                                          ? (isHardwareMic
-                                              ? (isHindiUi ? '🟢 लाइव माइक चालू (रिकॉर्डिंग...)' : '🟢 HARDWARE MIC LIVE (STREAMING)')
-                                              : (isHindiUi ? '🟡 वॉचडॉग पुनः कनेक्ट कर रहा है...' : '🟡 WATCHDOG RE-ENGAGING MIC...'))
-                                          : (isHindiUi ? '⚪ माइक बंद है (निष्क्रिय)' : '⚪ CONTINUOUS MIC DISABLED'),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: isListening ? Colors.white : AppTheme.textDark,
-                                        letterSpacing: 0.5,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 9,
+                                        height: 9,
+                                        decoration: BoxDecoration(
+                                          color: isListening
+                                              ? (isHardwareMic ? Colors.redAccent : Colors.amberAccent)
+                                              : Colors.grey.shade400,
+                                          shape: BoxShape.circle,
+                                          boxShadow: isListening
+                                              ? [
+                                                  BoxShadow(
+                                                    color: isHardwareMic ? Colors.redAccent : Colors.amberAccent,
+                                                    blurRadius: 6,
+                                                    spreadRadius: 1,
+                                                  )
+                                                ]
+                                              : [],
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        isListening
+                                            ? (isHardwareMic
+                                                ? (isHindiUi ? 'REC LIVE (16kHz VAD)' : 'REC LIVE • 16kHz STUDIO')
+                                                : (isHindiUi ? 'CONNECTING...' : 'RE-ENGAGING MIC...'))
+                                            : (isHindiUi ? 'STANDBY MODE' : 'RECORDER STANDBY'),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.8,
+                                          color: isListening ? Colors.white : AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                isListening
-                                    ? (isHindiUi ? 'माइक निरंतर चालू है। बंद करने के लिए स्विच का उपयोग करें।' : 'Continuous mic active. Switch OFF when done.')
-                                    : (isHindiUi ? 'निरंतर रिकॉर्डिंग सक्षम करने के लिए स्विच चालू करें।' : 'Enable switch to turn microphone ON continuously.'),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isListening ? Colors.white70 : AppTheme.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-
-                        // Explicit Enable/Disable Switch Control
-                        Switch.adaptive(
-                          value: isListening,
-                          activeThumbColor: Colors.lightGreenAccent,
-                          activeTrackColor: Colors.red.shade700,
-                          inactiveThumbColor: AppTheme.deepCrimson,
-                          inactiveTrackColor: AppTheme.cardWhite,
-                          onChanged: (_) => _toggleContinuousListening(appState, speechService),
+                        Row(
+                          children: [
+                            Text(
+                              isListening ? (isHindiUi ? 'चालू' : 'LIVE') : (isHindiUi ? 'बंद' : 'OFF'),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isListening ? Colors.white70 : AppTheme.textMuted,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Switch.adaptive(
+                              value: isListening,
+                              activeThumbColor: Colors.white,
+                              activeTrackColor: Colors.redAccent,
+                              inactiveThumbColor: AppTheme.deepCrimson,
+                              inactiveTrackColor: AppTheme.cardWhite,
+                              onChanged: (_) => _toggleContinuousListening(appState, speechService),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 16),
+
+                    // Central Studio Audio Spectrum / Waveform Visualizer & Deck Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // Left Waveform Bars
+                        _buildWaveformBars(isListening, isLeft: true),
+
+                        // Centerpiece Studio Record Button
+                        GestureDetector(
+                          onTap: () => _toggleContinuousListening(appState, speechService),
+                          child: AnimatedBuilder(
+                            animation: _pulseController,
+                            builder: (context, child) {
+                              final scale = isListening ? (1.0 + 0.05 * _pulseController.value) : 1.0;
+                              return Transform.scale(
+                                scale: scale,
+                                child: Container(
+                                  width: 82,
+                                  height: 82,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: isListening
+                                        ? const LinearGradient(
+                                            colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          )
+                                        : const LinearGradient(
+                                            colors: [AppTheme.deepCrimson, AppTheme.darkCrimson],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: (isListening ? Colors.redAccent : AppTheme.deepCrimson)
+                                            .withValues(alpha: isListening ? 0.6 : 0.3),
+                                        blurRadius: isListening ? 20 : 10,
+                                        spreadRadius: isListening ? 4 : 1,
+                                      ),
+                                    ],
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 3.5,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 250),
+                                      width: isListening ? 26 : 36,
+                                      height: isListening ? 26 : 36,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(isListening ? 6 : 18),
+                                      ),
+                                      child: isListening
+                                          ? Icon(
+                                              Icons.stop_rounded,
+                                              color: Colors.red.shade900,
+                                              size: 20,
+                                            )
+                                          : const Icon(
+                                              Icons.mic_rounded,
+                                              color: AppTheme.deepCrimson,
+                                              size: 22,
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        // Right Waveform Bars
+                        _buildWaveformBars(isListening, isLeft: false),
+                      ],
+                    ),
+
                     const SizedBox(height: 12),
+
+                    Text(
+                      isListening
+                          ? (isHindiUi
+                              ? '🔴 निरंतर रिकॉर्डिंग चालू है (माइक हमेशा सुन रहा है)'
+                              : '🔴 Continuous Studio Recording Active (Tap to Stop)')
+                          : (isHindiUi
+                              ? 'रिकॉर्डर शुरू करने के लिए बटन या स्विच दबाएं'
+                              : 'Tap Studio Mic Button to Start Continuous Recording'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isListening ? Colors.white70 : AppTheme.textMuted,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Full-width Professional Action Button
                     SizedBox(
                       width: double.infinity,
                       child: AnimatedPressButton(
                         onPressed: () => _toggleContinuousListening(appState, speechService),
                         backgroundColor: isListening ? Colors.white : AppTheme.deepCrimson,
                         foregroundColor: isListening ? Colors.red.shade900 : Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        borderRadius: 14,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        borderRadius: 16,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              isListening ? Icons.power_settings_new_rounded : Icons.mic_rounded,
-                              size: 20,
+                              isListening ? Icons.stop_circle_rounded : Icons.fiber_manual_record_rounded,
+                              size: 18,
+                              color: isListening ? Colors.red.shade900 : Colors.white,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               isListening
-                                  ? (isHindiUi ? 'माइक बंद करें (DISABLE MIC)' : 'DISABLE CONTINUOUS MIC')
-                                  : (isHindiUi ? 'माइक चालू करें (ENABLE MIC)' : 'ENABLE CONTINUOUS MIC'),
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  ? (isHindiUi ? 'रिकॉर्डिंग बंद करें (STOP RECORDING)' : 'STOP STUDIO RECORDING')
+                                  : (isHindiUi ? 'रिकॉर्डिंग शुरू करें (START RECORDING)' : 'START CONTINUOUS RECORDING'),
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.3),
                             ),
                           ],
                         ),
@@ -657,6 +804,8 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
 
   /// 3. Live Translation Subtitle Stage Card
   Widget _buildLiveSubtitleStageCard(BuildContext context, AppState appState, bool isHindiUi) {
+    final isTeacher = appState.isTeacherMode;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -690,7 +839,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        isHindiUi ? 'लाइव अनुवाद मंच' : 'Real-Time Classroom Subtitles',
+                        isTeacher
+                            ? (isHindiUi ? 'लाइव अनुवाद मंच (हिंदी ➔ संथाली)' : 'Real-Time Subtitles (Hindi ➔ Santali)')
+                            : (isHindiUi ? 'लाइव अनुवाद मंच (संथाली ➔ हिंदी)' : 'Real-Time Subtitles (Santali ➔ Hindi)'),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -715,7 +866,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
           const SizedBox(height: 16),
 
           Text(
-            isHindiUi ? 'शिक्षक का वक्तव्य:' : 'Teacher Speech Input:',
+            isTeacher
+                ? (isHindiUi ? 'शिक्षक का वक्तव्य (हिंदी):' : 'Teacher Speech Input (Hindi):')
+                : (isHindiUi ? 'छात्र का वक्तव्य (संथाली):' : 'Student Speech Input (Santali):'),
             style: const TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
@@ -730,7 +883,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
               appState.livePartialHindiText.isNotEmpty
                   ? '🎙️ ${appState.livePartialHindiText}'
                   : (appState.currentInputText.isEmpty
-                      ? (isHindiUi ? 'माइक दबाएं और पाठ पढ़ाना शुरू करें...' : 'Click continuous mic to start speaking...')
+                      ? (isTeacher
+                          ? (isHindiUi ? 'माइक दबाएं और पाठ पढ़ाना शुरू करें...' : 'Click continuous mic to start speaking...')
+                          : (isHindiUi ? 'संथाली में बोलें या प्रश्न पूछें...' : 'Click continuous mic to speak Santali...'))
                       : appState.currentInputText),
               style: TextStyle(
                 fontSize: 16,
@@ -743,7 +898,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
           const SizedBox(height: 14),
 
           Text(
-            '${appState.targetLanguage.displayName} Translation:',
+            isTeacher
+                ? '${appState.targetLanguage.displayName} Translation (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ):'
+                : (isHindiUi ? 'हिंदी उपशीर्षक / अनुवाद:' : 'Hindi Subtitles / Translation:'),
             style: const TextStyle(fontSize: 11, color: AppTheme.deepCrimson, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
@@ -780,11 +937,16 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
 
   /// 4. Quick Santhali Phrase Bank Chips
   Widget _buildQuickPhraseBank(BuildContext context, AppState appState, bool isHindiUi) {
+    final isTeacher = appState.isTeacherMode;
+    final activePhrases = isTeacher ? _quickTeacherPhrases : _quickStudentPhrases;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          isHindiUi ? 'त्वरित कक्षा वाक्य (क्लिक करें):' : 'Quick Santhali Classroom Phrases:',
+          isTeacher
+              ? (isHindiUi ? 'त्वरित शिक्षक वाक्य (क्लिक करें):' : 'Quick Teacher Classroom Phrases:')
+              : (isHindiUi ? 'त्वरित छात्र संथाली वाक्य (क्लिक करें):' : 'Quick Student Santali Phrases:'),
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textDark),
         ),
         const SizedBox(height: 10),
@@ -792,10 +954,10 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
           height: 42,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: _quickTeacherPhrases.length,
+            itemCount: activePhrases.length,
             separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
-              final phrase = _quickTeacherPhrases[index];
+              final phrase = activePhrases[index];
               return AnimatedPressButton(
                 onPressed: () => appState.processTranslation(phrase),
                 backgroundColor: AppTheme.lightCream,
@@ -815,6 +977,8 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
 
   /// 5. Manual Speech/Text Input Field
   Widget _buildManualTextInput(BuildContext context, AppState appState, bool isHindiUi) {
+    final isTeacher = appState.isTeacherMode;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -828,7 +992,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isHindiUi ? 'कस्टम पाठ / वाक्य टाइप करें:' : 'Custom Sentence Manual Input:',
+            isTeacher
+                ? (isHindiUi ? 'कस्टम शिक्षक पाठ टाइप करें:' : 'Teacher Custom Sentence Input:')
+                : (isHindiUi ? 'कस्टम छात्र वाक्य टाइप करें:' : 'Student Custom Sentence Input:'),
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textDark),
           ),
           const SizedBox(height: 10),
@@ -838,7 +1004,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                 child: TextField(
                   controller: _customTextInputController,
                   decoration: InputDecoration(
-                    hintText: isHindiUi ? 'जैसे: आज हम गणित पढ़ेंगे...' : 'Type Hindi sentence...',
+                    hintText: isTeacher
+                        ? (isHindiUi ? 'जैसे: आज हम गणित पढ़ेंगे...' : 'Type Hindi sentence...')
+                        : (isHindiUi ? 'जैसे: ᱡᱚᱦᱟᱨ ᱜᱚᱝᱠᱮ / Johar...' : 'Type Santali sentence (Ol Chiki / Roman)...'),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                 ),
@@ -864,6 +1032,145 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
     );
   }
 
+  /// Inline Formatted Structured Notes Viewer Modal
+  void _showInlineNotesViewDialog(BuildContext context, AppState appState) {
+    final isHindiUi = appState.uiLanguage == AppUiLanguage.hindi;
+    final docContent = NotesGeneratorService.generateBilingualDocContent(
+      sessionLogs: appState.sessionLogs,
+      targetLanguage: appState.targetLanguage,
+      lessonTopic: appState.currentLessonTopic,
+      teacherName: appState.teacherName,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalCtx) {
+        return Container(
+          height: MediaQuery.of(modalCtx).size.height * 0.88,
+          decoration: const BoxDecoration(
+            color: AppTheme.cardWhite,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              // Modal Handle & Header Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: const BoxDecoration(
+                  color: AppTheme.primaryYellow,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_stories, color: AppTheme.deepCrimson, size: 26),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        isHindiUi ? 'कक्षा अध्ययन नोट्स - पूर्वावलोकन' : 'Classroom Structured Study Notes',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.deepCrimson,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppTheme.deepCrimson),
+                      onPressed: () => Navigator.of(modalCtx).pop(),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Formatted Content Box
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: SelectableText(
+                    docContent,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12.5,
+                      height: 1.5,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Action Footer Bar
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: AppTheme.lightCream,
+                  border: Border(top: BorderSide(color: AppTheme.borderSubtle)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AnimatedPressButton(
+                        onPressed: () async {
+                          final file = await NotesGeneratorService.exportTxtFile(
+                            sessionLogs: appState.sessionLogs,
+                            targetLanguage: appState.targetLanguage,
+                            lessonTopic: appState.currentLessonTopic,
+                            teacherName: appState.teacherName,
+                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Saved .TXT to Downloads:\n${file.path}'),
+                                backgroundColor: AppTheme.deepCrimson,
+                              ),
+                            );
+                          }
+                        },
+                        backgroundColor: Colors.brown.shade800,
+                        foregroundColor: Colors.white,
+                        borderRadius: 14,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: const Text('.TXT Copy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: AnimatedPressButton(
+                        onPressed: () async {
+                          final file = await NotesGeneratorService.exportSingleDocxFile(
+                            sessionLogs: appState.sessionLogs,
+                            targetLanguage: appState.targetLanguage,
+                            lessonTopic: appState.currentLessonTopic,
+                            teacherName: appState.teacherName,
+                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Saved .DOCX to Downloads:\n${file.path}'),
+                                backgroundColor: AppTheme.deepCrimson,
+                              ),
+                            );
+                          }
+                        },
+                        backgroundColor: AppTheme.deepCrimson,
+                        foregroundColor: Colors.white,
+                        borderRadius: 14,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: const Text('.DOCX Notes', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// 6. Live Session Timeline & Single File Download Confirmation
   Widget _buildSessionTimeline(BuildContext context, AppState appState, bool isHindiUi) {
     final logs = appState.sessionLogs;
@@ -884,6 +1191,21 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
             if (logs.isNotEmpty) ...[
               const SizedBox(width: 6),
               AnimatedPressButton(
+                onPressed: () => _showInlineNotesViewDialog(context, appState),
+                backgroundColor: Colors.teal.shade800,
+                borderRadius: 14,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                boxShadow: const [],
+                child: const Row(
+                  children: [
+                    Icon(Icons.visibility, color: Colors.white, size: 14),
+                    SizedBox(width: 4),
+                    Text('View Notes', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              AnimatedPressButton(
                 onPressed: () async {
                   try {
                     final file = await NotesGeneratorService.downloadLiveHindiNotesTxt(
@@ -895,7 +1217,7 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Raw Hindi Speech Notes (.txt) saved:\n${file.path}'),
+                          content: Text('Raw Speech Notes (.txt) saved to Downloads:\n${file.path}'),
                           backgroundColor: Colors.brown.shade800,
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -1013,6 +1335,10 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
             separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final item = logs[index];
+              final isSantaliSource = item.isOriginalSantali || (!appState.isTeacherMode && !RegExp(r'[\u0900-\u097F]').hasMatch(item.originalText));
+              final srcLabel = isSantaliSource ? 'Santhali' : 'Hindi';
+              final tgtLabel = isSantaliSource ? 'Hindi' : 'Santhali';
+
               return Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -1024,12 +1350,12 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hindi: ${item.originalText}',
+                      '$srcLabel: ${item.originalText}',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textDark),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Santhali: ${item.translatedText}',
+                      '$tgtLabel: ${item.translatedText}',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.deepCrimson),
                     ),
                   ],
@@ -1133,8 +1459,11 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                       children: [
                         Expanded(
                           child: TextButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(),
-                            child: const Text('Cancel', style: TextStyle(color: AppTheme.textMuted)),
+                            onPressed: () {
+                              Navigator.of(dialogContext).pop();
+                              _showInlineNotesViewDialog(context, appState);
+                            },
+                            child: const Text('View Notes', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -1155,7 +1484,7 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                                   Navigator.of(dialogContext).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Study Material Word file (.docx) downloaded:\n${file.path}'),
+                                      content: Text('Study Material Word file (.docx) downloaded to Downloads:\n${file.path}'),
                                       backgroundColor: AppTheme.deepCrimson,
                                       behavior: SnackBarBehavior.floating,
                                       duration: const Duration(seconds: 4),
@@ -1237,6 +1566,37 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWaveformBars(bool isListening, {required bool isLeft}) {
+    const barCount = 5;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(barCount, (index) {
+        return AnimatedBuilder(
+          animation: _pulseController,
+          builder: (context, child) {
+            final cycle = (index * 0.2 + (isLeft ? 0.0 : 0.5)) % 1.0;
+            final val = (cycle + _pulseController.value) % 1.0;
+            final height = isListening
+                ? (8.0 + 22.0 * (0.5 + 0.5 * (val - 0.5).abs()))
+                : (6.0 + (index % 3) * 3.0);
+
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 4,
+              height: height,
+              decoration: BoxDecoration(
+                color: isListening
+                    ? Colors.white.withValues(alpha: 0.6 + 0.4 * (val > 0.5 ? 1.0 : 0.5))
+                    : AppTheme.deepCrimson.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          },
+        );
+      }),
     );
   }
 }

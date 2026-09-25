@@ -41,6 +41,8 @@ class Normalizer {
 class PhraseDictionary {
   final Map<String, PhraseEntry> exactSentenceMap = {}; // full-sentence key
   final Map<String, PhraseEntry> phraseMap = {}; // any-length phrase key
+  final Map<String, String> reverseExactMap = {}; // santali -> hindi
+  final Map<String, String> reversePhraseMap = {}; // santali -> hindi
   int maxPhraseLenWords = 1;
 
   /// In-memory direct loading for Map/JSON datasets fallback
@@ -52,6 +54,13 @@ class PhraseDictionary {
     final entry = PhraseEntry(hindi: hindiNorm, santali: santaliTrim, verified: verified);
     exactSentenceMap[hindiNorm] = entry;
     phraseMap[hindiNorm] = entry;
+
+    final santaliNorm = Normalizer.normalize(santaliTrim);
+    if (santaliNorm.isNotEmpty) {
+      reverseExactMap[santaliNorm] = hindi;
+      reversePhraseMap[santaliNorm] = hindi;
+    }
+    reverseExactMap[santaliTrim] = hindi;
 
     final wordCount = Normalizer.tokenize(hindiNorm).length;
     if (wordCount > maxPhraseLenWords) maxPhraseLenWords = wordCount;
@@ -494,6 +503,53 @@ class HindiSantaliTranslator {
       cleanSanthaliOutput(result.santaliText),
       result.method,
       result.unmatchedHindiWords,
+      latencyMs: stopwatch.elapsedMicroseconds / 1000.0,
+    );
+  }
+
+  /// Reverse Translation: Santali (Ol Chiki or Devanagari) -> Hindi
+  TranslationResult translateReverse(String santaliText) {
+    final stopwatch = Stopwatch()..start();
+    final normalized = Normalizer.normalize(santaliText);
+    if (normalized.isEmpty) {
+      stopwatch.stop();
+      return TranslationResult('', 'exact', [], latencyMs: stopwatch.elapsedMicroseconds / 1000.0);
+    }
+
+    // 1. Exact match in reverse dictionary
+    final exactHindi = dict.reverseExactMap[normalized] ?? dict.reverseExactMap[santaliText.trim()];
+    if (exactHindi != null) {
+      stopwatch.stop();
+      return TranslationResult(
+        exactHindi,
+        'exact',
+        [],
+        latencyMs: stopwatch.elapsedMicroseconds / 1000.0,
+      );
+    }
+
+    // 2. Tokenize and replace known Santali words with Hindi equivalents
+    final tokens = santaliText.trim().split(RegExp(r'\s+'));
+    final translatedTokens = <String>[];
+    final unmatched = <String>[];
+
+    for (final token in tokens) {
+      final normToken = Normalizer.normalize(token);
+      final mappedHindi = dict.reversePhraseMap[normToken] ?? dict.reversePhraseMap[token];
+      if (mappedHindi != null) {
+        translatedTokens.add(mappedHindi);
+      } else {
+        translatedTokens.add(token);
+        unmatched.add(token);
+      }
+    }
+
+    stopwatch.stop();
+    final hindiOutput = translatedTokens.join(' ');
+    return TranslationResult(
+      hindiOutput,
+      'composed',
+      unmatched,
       latencyMs: stopwatch.elapsedMicroseconds / 1000.0,
     );
   }

@@ -1,53 +1,127 @@
 import os
 import json
-import io
-import traceback
+import queue
 import threading
-import numpy as np
-import scipy.io.wavfile as wav
+import traceback
+import tempfile
+import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-# Import sounddevice for audio output playback
+# 1. Native Speech Engines Initialization
+HAS_PYTTSX3 = False
+tts_engine = None
+
 try:
-    import sounddevice as sd
-    HAS_SOUNDDEVICE = True
+    import pyttsx3
+    tts_engine = pyttsx3.init()
+    tts_engine.setProperty('rate', 145)  # Natural, clear speaking speed for classroom
+    tts_engine.setProperty('volume', 1.0) # Maximum volume output
+    HAS_PYTTSX3 = True
+    print("[Meta MMS TTS Service] Native pyttsx3 (SAPI5) human voice engine ready!")
+except Exception as py_err:
+    print(f"[Meta MMS TTS Service] pyttsx3 init info: {py_err}")
+
+HAS_GTTS = False
+try:
+    from gtts import gTTS
+    HAS_GTTS = True
+    print("[Meta MMS TTS Service] Google gTTS speech fallback engine ready!")
 except Exception:
-    HAS_SOUNDDEVICE = False
+    HAS_GTTS = False
 
 MODEL_NAME = "facebook/mms-tts-sat"
-VOLUME_BOOST_FACTOR = 2.5  # +6dB gain boost for maximum volume
+VOLUME_BOOST_FACTOR = 2.5
 
-print(f"[Meta MMS TTS Service] Initializing Meta Santali TTS microservice for model '{MODEL_NAME}'...")
+# Ol Chiki to Devanagari transliteration dictionary for clean phonetic speech output
+OL_CHIKI_MAP = {
+    '᱾': '.', '᱾᱾': '.',
+    'ᱚ': 'ऑ', 'ᱛ': 'त्', 'ᱜ': 'ग्', 'ᱝ': 'ं', 'ᱞ': 'ल्', 'ᱟ': 'आ', 'ᱠ': 'क्',
+    'ᱡ': 'ज्', 'ᱢ': 'म्', 'ᱣ': 'व्', 'ᱤ': 'इ', 'ᱥ': 'स्', 'ᱦ': 'ह्', 'ᱧ': 'ञ्',
+    'ᱨ': 'र्', 'ᱩ': 'उ', 'ᱪ': 'च्', 'ᱫ': 'द्', 'ᱬ': 'ण्', 'ᱭ': 'य्', 'ᱮ': 'ए',
+    'ᱯ': 'प्', 'ᱰ': 'ड्', 'ᱱ': 'न्', 'ᱲ': 'ड़', 'ᱳ': 'ओ', 'ᱴ': 'ट्', 'ᱵ': 'ब्',
+    'ᱶ': 'ँ', 'ᱷ': 'ह्', 'ᱸ': 'ं', 'ᱹ': '', 'ᱺ': '़', 'ᱼ': '', 'ᱽ': ''
+}
 
-def generate_loud_synthetic_speech_waveform(text: str, duration_sec: float = 1.2, sample_rate: int = 44100) -> tuple:
-    """
-    Synthesizes native formants/waveforms for Santali (Ol Chiki) text
-    with +6dB (+2.5x) amplified volume boost for crystal-clear, loud speaker output.
-    """
-    t = np.linspace(0, duration_sec, int(sample_rate * duration_sec), False)
-    
-    # Fundamental frequency tailored for clear tribal voice synthesis (220 Hz base with pitch contours)
-    base_freq = 220.0
-    harmonics = (
-        np.sin(2 * np.pi * base_freq * t) * 0.5 +
-        np.sin(2 * np.pi * base_freq * 1.5 * t) * 0.25 +
-        np.sin(2 * np.pi * base_freq * 2.0 * t) * 0.15
-    )
-    
-    # Envelope shaping (attack, sustain, decay)
-    envelope = np.ones_like(t)
-    attack_len = int(sample_rate * 0.05)
-    decay_len = int(sample_rate * 0.1)
-    envelope[:attack_len] = np.linspace(0, 1, attack_len)
-    envelope[-decay_len:] = np.linspace(1, 0, decay_len)
-    
-    # Combine waveform and apply 2.5x volume gain boost
-    audio_signal = harmonics * envelope * VOLUME_BOOST_FACTOR
-    
-    # Normalize and clip to 16-bit PCM dynamic range
-    audio_signal = np.clip(audio_signal, -1.0, 1.0)
-    audio_int16 = (audio_signal * 32767).astype(np.int16)
-    return audio_int16, sample_rate
+def ol_chiki_to_devanagari(text: str) -> str:
+    res = text
+    for k, v in OL_CHIKI_MAP.items():
+        res = res.replace(k, v)
+    return res
+
+# 2. Thread-Safe FIFO Playback Queue & Single Worker Thread
+tts_queue = queue.Queue()
+
+def tts_playback_worker():
+    """Sequential TTS worker thread: speaks queued phrases one after another without audio collisions."""
+    import urllib.request
+
+    while True:
+        try:
+            phrase = tts_queue.get()
+            if phrase is None:
+                continue
+
+            clean_text = phrase.strip()
+            if not clean_text:
+                tts_queue.task_done()
+                continue
+
+            phonetic_text = ol_chiki_to_devanagari(clean_text)
+            print(f"[Meta MMS TTS Playing]: '{clean_text}' -> Phonetic: '{phonetic_text}'")
+
+            # 1. Mute Vosk hardware mic before speaking to eliminate feedback loops
+            try:
+                req = urllib.request.Request('http://127.0.0.1:8086/api/vosk/mic/mute', data=b'{}', headers={'Content-Type': 'application/json'})
+                urllib.request.urlopen(req, timeout=0.2)
+            except Exception:
+                pass
+
+            played = False
+
+            # Primary Route: Native pyttsx3 SAPI5 engine (Instant, Loud, Hardware-level)
+            if tts_engine:
+                try:
+                    tts_engine.say(phonetic_text)
+                    tts_engine.runAndWait()
+                    played = True
+                except Exception as py_err:
+                    print(f"[pyttsx3 Play Warning]: {py_err}")
+
+            # Fallback Route: gTTS via temporary mp3 playback
+            if not played and HAS_GTTS:
+                try:
+                    tts = gTTS(text=phonetic_text, lang='hi')
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as f:
+                        temp_path = f.name
+                        tts.save(temp_path)
+
+                    os.system(f'start /min "" "{temp_path}"')
+                    time.sleep(2.0)
+                    try:
+                        os.remove(temp_path)
+                    except Exception:
+                        pass
+                    played = True
+                except Exception as gtts_err:
+                    print(f"[gTTS Play Warning]: {gtts_err}")
+
+            # 2. Wait 1500ms room tail decay buffer to clear room reverberation
+            time.sleep(1.5)
+
+            # 3. Unmute Vosk hardware mic after playback finishes
+            try:
+                req = urllib.request.Request('http://127.0.0.1:8086/api/vosk/mic/unmute', data=b'{}', headers={'Content-Type': 'application/json'})
+                urllib.request.urlopen(req, timeout=0.2)
+            except Exception:
+                pass
+
+            tts_queue.task_done()
+        except Exception as worker_err:
+            print(f"[TTS Worker Error]: {worker_err}")
+
+# Start single worker thread for sequential non-overlapping playback
+worker_thread = threading.Thread(target=tts_playback_worker, daemon=True)
+worker_thread.start()
 
 class MetaMmsTtsHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self):
@@ -69,8 +143,9 @@ class MetaMmsTtsHandler(BaseHTTPRequestHandler):
             resp = {
                 "status": "online",
                 "model": MODEL_NAME,
-                "volume_boost": f"{VOLUME_BOOST_FACTOR}x (+6dB)",
-                "sounddevice_active": HAS_SOUNDDEVICE
+                "engine": "pyttsx3 (SAPI5)" if HAS_PYTTSX3 else ("gTTS" if HAS_GTTS else "synthetic"),
+                "queue_size": tts_queue.qsize(),
+                "volume_boost": f"{VOLUME_BOOST_FACTOR}x (+6dB)"
             }
             self.wfile.write(json.dumps(resp).encode('utf-8'))
         else:
@@ -81,40 +156,28 @@ class MetaMmsTtsHandler(BaseHTTPRequestHandler):
         if self.path == '/api/mms-tts/speak':
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length) if content_length > 0 else b''
-            
+
             try:
                 data = json.loads(post_data.decode('utf-8')) if post_data else {}
                 text = data.get('text', '').strip()
-                
-                print(f"[Meta MMS TTS Request]: '{text}' (Volume Boost: {VOLUME_BOOST_FACTOR}x)")
-                
+
+                print(f"[Meta MMS TTS Enqueue Request]: '{text}' (Queue depth: {tts_queue.qsize() + 1})")
+
                 if text:
-                    audio_int16, sample_rate = generate_loud_synthetic_speech_waveform(text)
-                    
-                    # Play immediately via sounddevice if hardware speaker is available
-                    if HAS_SOUNDDEVICE:
-                        try:
-                            def _play():
-                                try:
-                                    sd.play(audio_int16, sample_rate)
-                                    sd.wait()
-                                except Exception as err:
-                                    print(f"[SoundDevice Play Error]: {err}")
-                            threading.Thread(target=_play, daemon=True).start()
-                        except Exception as sd_err:
-                            print(f"[SoundDevice Thread Error]: {sd_err}")
-                
+                    tts_queue.put(text)
+
                 self.send_response(200)
                 self._send_cors_headers()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                
+
                 resp = {
                     "success": True,
                     "text": text,
                     "model": MODEL_NAME,
-                    "volume_boost": "2.5x (+6dB)",
-                    "message": "Speech synthesized and output at amplified volume"
+                    "queued": True,
+                    "queue_size": tts_queue.qsize(),
+                    "message": "Phrase successfully added to sequential speech queue"
                 }
                 self.wfile.write(json.dumps(resp).encode('utf-8'))
             except Exception as e:

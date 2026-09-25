@@ -1,0 +1,167 @@
+{
+  "version": "2.0.0",
+  "dataset_name": "NIPUN Bharat - Semantically Anchored Hindi-Santali Parallel Corpus",
+  "language_pair": "hindi_santhali_olchiki",
+  "corpus": [
+    {
+      "source_hindi": "मेरी बात सुनो",
+      "literal_gloss": "my matter hear",
+      "intended_meaning": "Listen to me / pay attention to what I am saying",
+      "target_santali": "ᱤᱧᱟᱜ ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, child_directed",
+      "back_translation": "Listen to my words",
+      "notes_on_divergence": "Hindi uses 'बात सुनो' (listen to matter); Santali uses 'ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ' (listen to words/speech)"
+    },
+    {
+      "source_hindi": "देखो एक बात सुनो",
+      "literal_gloss": "look one matter hear",
+      "intended_meaning": "Look here and listen to one thing I have to say",
+      "target_santali": "ᱧᱮᱞ ᱢᱮ ᱢᱤᱫᱴᱟᱝ ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, conversational",
+      "back_translation": "Look and listen to one word",
+      "notes_on_divergence": "Combines visual attention 'ᱧᱮᱞ ᱢᱮ' with auditory focus 'ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ'"
+    },
+    {
+      "source_hindi": "एक बात सुनो",
+      "literal_gloss": "one matter hear",
+      "intended_meaning": "Listen to one thing",
+      "target_santali": "ᱢᱤᱫᱴᱟᱝ ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, conversational",
+      "back_translation": "Listen to one word",
+      "notes_on_divergence": "Quantifier 'एक' converts to Santali item classifier 'ᱢᱤᱫᱴᱟᱝ' (midtang)"
+    },
+    {
+      "source_hindi": "सब बैठ जाओ",
+      "literal_gloss": "all sit go",
+      "intended_meaning": "Everyone sit down",
+      "target_santali": "ᱡᱚᱛᱚ ᱦᱚᱲ ᱫᱩᱲᱩᱵᱽ ᱯᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, plural",
+      "back_translation": "All people sit down",
+      "notes_on_divergence": "Hindi 'सब' expands to 'ᱡᱚᱛᱚ ᱦᱚᱲ' (all people) with plural imperative verb marker 'ᱯᱮ'"
+    },
+    {
+      "source_hindi": "बैठो",
+      "literal_gloss": "sit",
+      "intended_meaning": "Sit down (singular)",
+      "target_santali": "ᱫᱩᱲᱩᱵᱽ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, singular",
+      "back_translation": "Sit down",
+      "notes_on_divergence": "Singular imperative suffix 'ᱢᱮ' attached to verb root 'ᱫᱩᱲᱩᱵᱽ'"
+    },
+    {
+      "source_hindi": "बैठिए",
+      "literal_gloss": "sit (respectful)",
+      "intended_meaning": "Please sit down",
+      "target_santali": "ᱫᱩᱲᱩᱵᱽ ᱵᱤᱱ",
+      "context": "classroom_instruction",
+      "register": "imperative, respectful/dual",
+      "back_translation": "Please take a seat",
+      "notes_on_divergence": "Respectful imperative marker 'ᱵᱤᱱ' (bin)"
+    },
+    {
+      "source_hindi": "खड़े हो जाओ",
+      "literal_gloss": "standing become go",
+      "intended_meaning": "Stand up",
+      "target_santali": "ᱛᱤᱸᱜᱩᱱ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, singular",
+      "back_translation": "Stand up",
+      "notes_on_divergence": "Hindi compound verb 'खड़े हो जाओ' maps directly to Santali intransitive verb 'ᱛᱤᱸᱜᱩᱱ ᱢᱮ'"
+    },
+    {
+      "source_hindi": "सब खड़े हो जाओ",
+      "literal_gloss": "all standing become go",
+      "intended_meaning": "Everyone stand up",
+      "target_santali": "ᱡᱚᱛᱚ ᱦᱚᱲ ᱛᱤᱸᱜᱩᱱ ᱯᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, plural",
+      "back_translation": "All people stand up",
+      "notes_on_divergence": "Plural subject 'ᱡᱚᱛᱚ ᱦᱚᱲ' paired with plural command 'ᱛᱤᱸᱜᱩᱱ ᱯᱮ'"
+    },
+    {
+      "source_hindi": "ध्यान से सुनो",
+      "literal_gloss": "attention with hear",
+      "intended_meaning": "Listen carefully / pay close attention",
+      "target_santali": "ᱢᱚᱱ ᱮᱢ ᱠᱟᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "instructional, focused",
+      "back_translation": "Giving mind listen",
+      "notes_on_divergence": "Hindi 'ध्यान से' (with attention) translates idiomatically to 'ᱢᱚᱱ ᱮᱢ ᱠᱟᱛᱮ' (giving mind/heart)"
+    },
+    {
+      "source_hindi": "अपनी किताब खोलो",
+      "literal_gloss": "own book open",
+      "intended_meaning": "Open your book",
+      "target_santali": "ᱟᱢᱟᱜ ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡ ᱢᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, singular",
+      "back_translation": "Open your book",
+      "notes_on_divergence": "Possessive pronoun 'अपनी' maps to possessive 'ᱟᱢᱟᱜ' (your) + noun 'ᱯᱩᱛᱷᱤ' (book) + verb 'ᱡᱷᱤᱡ ᱢᱮ'"
+    },
+    {
+      "source_hindi": "सब अपनी किताबें खोलो",
+      "literal_gloss": "all own books open",
+      "intended_meaning": "Everyone open your books",
+      "target_santali": "ᱡᱚᱛᱚ ᱦᱚᱲ ᱟᱯᱱᱟᱨᱟᱜ ᱯᱩᱛᱷᱤ ᱡᱷᱤᱡ ᱯᱮ",
+      "context": "classroom_instruction",
+      "register": "imperative, plural",
+      "back_translation": "All people open your books",
+      "notes_on_divergence": "Plural possessive 'ᱟᱯᱱᱟᱨᱟᱜ' with plural command 'ᱡᱷᱤᱡ ᱯᱮ'"
+    },
+    {
+      "source_hindi": "दो और दो चार होते हैं",
+      "literal_gloss": "two and two four become",
+      "intended_meaning": "The mathematical fact that 2+2=4, used to introduce basic addition to children",
+      "target_santali": "ᱵᱟᱨ ᱟᱨ ᱵᱟᱨ ᱯᱳᱱ ᱦᱩᱭᱩᱜ-ᱟ",
+      "context": "math_curriculum, grade1",
+      "register": "instructional, neutral",
+      "back_translation": "Two plus two equals four",
+      "notes_on_divergence": "Direct mathematical correspondence: ᱵᱟᱨ (2) + ᱟᱨ (and) + ᱵᱟᱨ (2) + ᱯᱳᱱ (4) + ᱦᱩᱭᱩᱜ-ᱟ (becomes)"
+    },
+    {
+      "source_hindi": "आज हम गणित पढ़ेंगे",
+      "literal_gloss": "today we mathematics will read",
+      "intended_meaning": "Today we will study mathematics together",
+      "target_santali": "ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱞᱮᱠᱷᱟ ᱵᱚᱱ ᱯᱟᱲᱦᱟᱣᱟ",
+      "context": "classroom_instruction",
+      "register": "instructional, inclusive",
+      "back_translation": "Today we math will read",
+      "notes_on_divergence": "Inclusive pronoun 'ᱟᱵᱚ' (we all) with future verbal marker 'ᱵᱚᱱ ᱯᱟᱲᱦᱟᱣᱟ'"
+    },
+    {
+      "source_hindi": "बच्चे स्कूल जा रहे हैं",
+      "literal_gloss": "children school go ing are",
+      "intended_meaning": "Children are going to school",
+      "target_santali": "ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ ᱤᱛᱩᱱ ᱟᱥᱲᱟ ᱠᱚ ᱪᱟᱞᱟ standard ᱠᱟᱱᱟ",
+      "context": "general_description",
+      "register": "declarative",
+      "back_translation": "Children to school are going",
+      "notes_on_divergence": "Plural noun marker 'ᱠᱚ' attached to children 'ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ' and present continuous verb 'ᱪᱟᱞᱟ ᱠᱟᱱᱟ'"
+    },
+    {
+      "source_hindi": "पौधे को पानी दो",
+      "literal_gloss": "plant to water give",
+      "intended_meaning": "Water the plant",
+      "target_santali": "ᱫᱟᱨᱮ ᱨᱮ ᱫᱟᱜ ᱫᱩᱞ ᱢᱮ",
+      "context": "science_activity",
+      "register": "imperative",
+      "back_translation": "Pour water on plant",
+      "notes_on_divergence": "Hindi 'पानी दो' (give water) maps to idiomatic Santali 'ᱫᱟᱜ ᱫᱩᱞ ᱢᱮ' (pour water)"
+    },
+    {
+      "source_hindi": "साफ पानी पियो",
+      "literal_gloss": "clean water drink",
+      "intended_meaning": "Drink clean water for health",
+      "target_santali": "ᱥᱟᱯᱷᱟ ᱫᱟᱜ ᱧᱩᱭ ᱢᱮ",
+      "context": "health_hygiene",
+      "register": "instructional",
+      "back_translation": "Drink clean water",
+      "notes_on_divergence": "Adjective 'ᱥᱟᱯᱷᱟ' + noun 'ᱫᱟᱜ' + imperative verb 'ᱧᱩᱭ ᱢᱮ'"
+    }
+  ]
+}

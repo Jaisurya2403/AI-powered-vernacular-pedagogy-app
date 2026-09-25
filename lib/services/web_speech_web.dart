@@ -102,24 +102,33 @@ class WebSpeechQueueManager {
         utterance.lang = 'hi-IN';
       }
 
-      // Safety timeout timer (max 4 seconds per phrase) to prevent queue hanging
+      // Safety timeout timer (max 1800ms per phrase) to prevent queue hanging
       Timer? safetyTimer;
+      Timer? startCheckTimer;
       bool completed = false;
 
       void markCompleted(String reason) {
         if (!completed) {
           completed = true;
           safetyTimer?.cancel();
+          startCheckTimer?.cancel();
           debugPrint('[WebSpeechQueue] Completed ($reason) for: "$text"');
-          // Short 100ms gap before playing next queued phrase
-          Timer(const Duration(milliseconds: 100), () {
+          Timer(const Duration(milliseconds: 60), () {
             _processNextInQueue();
           });
         }
       }
 
-      safetyTimer = Timer(const Duration(milliseconds: 4000), () {
+      safetyTimer = Timer(const Duration(milliseconds: 1800), () {
         markCompleted('safety_timeout');
+      });
+
+      // Quick 350ms check: If browser TTS didn't actually start speaking, release queue
+      startCheckTimer = Timer(const Duration(milliseconds: 350), () {
+        if (!completed && html.window.speechSynthesis != null && html.window.speechSynthesis!.speaking != true) {
+          debugPrint('[WebSpeechQueue] Browser TTS is idle after 350ms, completing utterance.');
+          markCompleted('idle_check');
+        }
       });
 
       utterance.onEnd.listen((_) {
@@ -137,8 +146,15 @@ class WebSpeechQueueManager {
       _processNextInQueue();
     }
   }
+  static bool get isPlaying => _isPlaying || _queue.isNotEmpty;
 }
 
 void speakWebUtterance(String text) {
-  WebSpeechQueueManager.enqueue(text);
+  // Speech is handled by local TTS microservice (port 8088) with hardware mic auto-muting.
+  // Chrome speechSynthesis is bypassed to eliminate un-muted speaker feedback.
+  debugPrint('[WebSpeechHelper] Browser speech synthesis bypassed for local queue: $text');
+}
+
+bool isWebSpeechActive() {
+  return WebSpeechQueueManager.isPlaying;
 }

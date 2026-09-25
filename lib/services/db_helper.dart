@@ -31,7 +31,7 @@ class DbHelper {
   }
 
   static Future<void> _createTablesAndSeed(Database db) async {
-        // 1. Users Table
+        // 1. Users Table (Legacy/Auth compatibility)
         await db.execute('''
           CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +43,109 @@ class DbHelper {
           )
         ''');
 
-        // 2. Phrase Bank Table
+        // 2. Teachers Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE teachers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            school TEXT,
+            password_hash TEXT NOT NULL,
+            is_email_verified INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        // 3. Voiceprints Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE voiceprints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            teacher_id INTEGER NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+            embedding BLOB NOT NULL,
+            sample_count INTEGER NOT NULL,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        // 4. Sessions Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            teacher_id INTEGER NOT NULL REFERENCES teachers(id),
+            class_name TEXT,
+            started_at TEXT,
+            ended_at TEXT
+          )
+        ''');
+
+        // 5. Transcripts Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE transcripts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+            sequence_no INTEGER NOT NULL,
+            direction TEXT CHECK(direction IN ('hi_to_sat','sat_to_hi')) NOT NULL,
+            source_text TEXT,
+            target_text TEXT,
+            source_lang_confidence REAL,
+            asr_ms INTEGER, mt_ms INTEGER, tts_ms INTEGER,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        // 6. Curriculum Units Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE curriculum_units (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nipun_outcome_code TEXT,
+            grade_level INTEGER,
+            hindi_content TEXT NOT NULL,
+            santali_content TEXT,
+            content_type TEXT CHECK(content_type IN ('lesson','activity','assessment')) NOT NULL,
+            version INTEGER DEFAULT 1,
+            synced_at TEXT
+          )
+        ''');
+
+        // 7. Flashcards Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE flashcards (
+            id TEXT PRIMARY KEY,
+            hindi_word TEXT NOT NULL,
+            tribal_word TEXT NOT NULL,
+            english_meaning TEXT,
+            phonetic TEXT,
+            icon_symbol TEXT,
+            example_hindi TEXT,
+            example_tribal TEXT,
+            curriculum_unit_id INTEGER REFERENCES curriculum_units(id)
+          )
+        ''');
+
+        // 8. Worksheets Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE worksheets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            curriculum_unit_id INTEGER REFERENCES curriculum_units(id),
+            teacher_id INTEGER REFERENCES teachers(id),
+            file_path TEXT,
+            generated_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        // 9. Sync Queue Table (§5 Schema)
+        await db.execute('''
+          CREATE TABLE sync_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entity_type TEXT,
+            entity_id INTEGER,
+            action TEXT,
+            synced INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        // 10. Phrase Bank Table
         await db.execute('''
           CREATE TABLE phrase_bank (
             id TEXT PRIMARY KEY,
@@ -58,7 +160,7 @@ class DbHelper {
           )
         ''');
 
-        // 3. Word Dictionary Table
+        // 11. Word Dictionary Table
         await db.execute('''
           CREATE TABLE word_dictionary (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,21 +171,7 @@ class DbHelper {
           )
         ''');
 
-        // 4. Flashcards Table
-        await db.execute('''
-          CREATE TABLE flashcards (
-            id TEXT PRIMARY KEY,
-            hindi_word TEXT NOT NULL,
-            tribal_word TEXT NOT NULL,
-            english_meaning TEXT,
-            phonetic TEXT,
-            icon_symbol TEXT,
-            example_hindi TEXT,
-            example_tribal TEXT
-          )
-        ''');
-
-        // 5. Session Conversation Logs Table
+        // 12. Session Conversation Logs Table
         await db.execute('''
           CREATE TABLE session_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

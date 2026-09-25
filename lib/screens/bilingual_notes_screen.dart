@@ -130,9 +130,77 @@ class _BilingualNotesScreenState extends State<BilingualNotesScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Export Buttons (TXT and DOCX)
+            // Export & View Buttons (TXT, DOCX, View Notes)
             Row(
               children: [
+                Expanded(
+                  child: AnimatedPressButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (modalCtx) {
+                          return Container(
+                            height: MediaQuery.of(modalCtx).size.height * 0.88,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.cardWhite,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.primaryYellow,
+                                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.auto_stories, color: AppTheme.deepCrimson, size: 26),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          isHindiUi ? 'द्विभाषी नोट्स - पूर्वावलोकन' : 'Bilingual Classroom Notes Preview',
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.deepCrimson),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close, color: AppTheme.deepCrimson),
+                                        onPressed: () => Navigator.of(modalCtx).pop(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    padding: const EdgeInsets.all(20),
+                                    child: SelectableText(
+                                      docPreviewText,
+                                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12.5, height: 1.5, color: AppTheme.textDark),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    backgroundColor: Colors.teal.shade800,
+                    foregroundColor: Colors.white,
+                    boxShadow: const [],
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.visibility, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text('View Notes', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: AnimatedPressButton(
                     onPressed: _isExporting
@@ -173,14 +241,14 @@ class _BilingualNotesScreenState extends State<BilingualNotesScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.description, color: AppTheme.deepCrimson, size: 18),
-                        const SizedBox(width: 6),
-                        Text(isHindiUi ? 'TXT फ़ाइल' : 'Export .TXT Copy'),
+                        const Icon(Icons.description, color: AppTheme.deepCrimson, size: 16),
+                        const SizedBox(width: 4),
+                        Text(isHindiUi ? 'TXT फ़ाइल' : 'Export .TXT', style: const TextStyle(fontSize: 12)),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: AnimatedPressButton(
                     onPressed: _isExporting
@@ -218,9 +286,9 @@ class _BilingualNotesScreenState extends State<BilingualNotesScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.article, color: Colors.white, size: 18),
-                        const SizedBox(width: 6),
-                        Text(isHindiUi ? 'Word (.docx)' : 'Export .DOCX'),
+                        const Icon(Icons.article, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        Text(isHindiUi ? 'Word (.docx)' : 'Export .DOCX', style: const TextStyle(fontSize: 12)),
                       ],
                     ),
                   ),
