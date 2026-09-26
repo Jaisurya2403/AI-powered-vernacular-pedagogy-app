@@ -6,6 +6,7 @@ import '../services/speech_service.dart';
 import '../services/notes_generator_service.dart';
 import '../theme/app_theme.dart';
 import 'auth/signin_screen.dart';
+import 'teacher_profile_screen.dart';
 
 class HomeClassroomScreen extends StatefulWidget {
   const HomeClassroomScreen({super.key});
@@ -263,7 +264,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                           MaterialPageRoute(builder: (_) => const SignInScreen()),
                         );
                       } else {
-                        _showUserProfileModal(context, appState);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const TeacherProfileScreen()),
+                        );
                       }
                     },
                     child: Container(
@@ -282,6 +285,7 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                       ),
                     ),
                   ),
+
                 ],
               ),
             ),
@@ -518,128 +522,73 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
 
           const SizedBox(height: 20),
 
-          // Professional Studio Recorder UI Deck
+          // ── Professional Mic Control Panel ────────────────────────────────
           Builder(
             builder: (context) {
               final isHardwareMic = speechService.isHardwareMicListening;
+              final activeColor = isHardwareMic ? Colors.red.shade600 : Colors.amber.shade600;
 
               return AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOut,
-                padding: const EdgeInsets.all(18),
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
                 decoration: BoxDecoration(
-                  gradient: isListening
-                      ? LinearGradient(
-                          colors: [
-                            const Color(0xFF1E0305),
-                            Colors.red.shade900,
-                            const Color(0xFF2D0509),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : const LinearGradient(
-                          colors: [
-                            AppTheme.lightCream,
-                            Color(0xFFFFF7EA),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                  borderRadius: BorderRadius.circular(24),
+                  color: isListening
+                      ? const Color(0xFF180304)
+                      : AppTheme.cardWhite,
+                  borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: isListening
-                        ? (isHardwareMic ? Colors.redAccent : Colors.amber)
-                        : AppTheme.borderSubtle,
-                    width: isListening ? 2 : 1.5,
+                    color: isListening ? activeColor.withValues(alpha: 0.6) : AppTheme.borderSubtle,
+                    width: 1.5,
                   ),
-                  boxShadow: isListening
-                      ? [
-                          BoxShadow(
-                            color: (isHardwareMic ? Colors.red.shade700 : Colors.amber.shade700).withValues(alpha: 0.35),
-                            blurRadius: 22,
-                            spreadRadius: 3,
-                            offset: const Offset(0, 8),
-                          )
-                        ]
-                      : [
-                          const BoxShadow(
-                            color: Color(0x10800000),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          )
-                        ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: isListening
+                          ? activeColor.withValues(alpha: 0.25)
+                          : const Color(0x0D800000),
+                      blurRadius: isListening ? 18 : 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    // Top Studio Console Bar: Status LED & Master Switch
+                    // ── Status Bar ──────────────────────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Left: LED + label
                         Row(
                           children: [
-                            AnimatedBuilder(
-                              animation: _pulseController,
-                              builder: (context, child) {
-                                final glow = isListening ? (0.6 + 0.4 * _pulseController.value) : 1.0;
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: isListening
-                                        ? (isHardwareMic
-                                            ? Colors.red.shade900.withValues(alpha: glow)
-                                            : Colors.amber.shade900.withValues(alpha: glow))
-                                        : AppTheme.cardWhite,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: isListening
-                                          ? (isHardwareMic ? Colors.redAccent : Colors.amberAccent)
-                                          : AppTheme.borderSubtle,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 9,
-                                        height: 9,
-                                        decoration: BoxDecoration(
-                                          color: isListening
-                                              ? (isHardwareMic ? Colors.redAccent : Colors.amberAccent)
-                                              : Colors.grey.shade400,
-                                          shape: BoxShape.circle,
-                                          boxShadow: isListening
-                                              ? [
-                                                  BoxShadow(
-                                                    color: isHardwareMic ? Colors.redAccent : Colors.amberAccent,
-                                                    blurRadius: 6,
-                                                    spreadRadius: 1,
-                                                  )
-                                                ]
-                                              : [],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        isListening
-                                            ? (isHardwareMic
-                                                ? (isHindiUi ? 'REC LIVE (16kHz VAD)' : 'REC LIVE • 16kHz STUDIO')
-                                                : (isHindiUi ? 'CONNECTING...' : 'RE-ENGAGING MIC...'))
-                                            : (isHindiUi ? 'STANDBY MODE' : 'RECORDER STANDBY'),
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 0.8,
-                                          color: isListening ? Colors.white : AppTheme.textMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isListening ? activeColor : Colors.grey.shade400,
+                                boxShadow: isListening
+                                    ? [BoxShadow(color: activeColor, blurRadius: 5, spreadRadius: 1)]
+                                    : [],
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              isListening
+                                  ? (isHardwareMic
+                                      ? (isHindiUi ? 'रिकॉर्ड हो रहा है' : 'RECORDING LIVE')
+                                      : (isHindiUi ? 'माइक जोड़ा जा रहा है...' : 'RECONNECTING...'))
+                                  : (isHindiUi ? 'माइक बंद है' : 'MIC STANDBY'),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
+                                color: isListening ? activeColor : Colors.grey.shade500,
+                              ),
                             ),
                           ],
                         ),
+                        // Right: LIVE / OFF toggle switch
                         Row(
                           children: [
                             Text(
@@ -647,16 +596,16 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: isListening ? Colors.white70 : AppTheme.textMuted,
+                                color: isListening ? activeColor : Colors.grey.shade400,
                               ),
                             ),
                             const SizedBox(width: 4),
                             Switch.adaptive(
                               value: isListening,
                               activeThumbColor: Colors.white,
-                              activeTrackColor: Colors.redAccent,
+                              activeTrackColor: Colors.red.shade600,
                               inactiveThumbColor: AppTheme.deepCrimson,
-                              inactiveTrackColor: AppTheme.cardWhite,
+                              inactiveTrackColor: AppTheme.lightCream,
                               onChanged: (_) => _toggleContinuousListening(appState, speechService),
                             ),
                           ],
@@ -666,127 +615,117 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
 
                     const SizedBox(height: 16),
 
-                    // Central Studio Audio Spectrum / Waveform Visualizer & Deck Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Left Waveform Bars
-                        _buildWaveformBars(isListening, isLeft: true),
-
-                        // Centerpiece Studio Record Button
-                        GestureDetector(
-                          onTap: () => _toggleContinuousListening(appState, speechService),
-                          child: AnimatedBuilder(
-                            animation: _pulseController,
-                            builder: (context, child) {
-                              final scale = isListening ? (1.0 + 0.05 * _pulseController.value) : 1.0;
-                              return Transform.scale(
-                                scale: scale,
-                                child: Container(
-                                  width: 82,
-                                  height: 82,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: isListening
-                                        ? const LinearGradient(
-                                            colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          )
-                                        : const LinearGradient(
-                                            colors: [AppTheme.deepCrimson, AppTheme.darkCrimson],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (isListening ? Colors.redAccent : AppTheme.deepCrimson)
-                                            .withValues(alpha: isListening ? 0.6 : 0.3),
-                                        blurRadius: isListening ? 20 : 10,
-                                        spreadRadius: isListening ? 4 : 1,
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 3.5,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 250),
-                                      width: isListening ? 26 : 36,
-                                      height: isListening ? 26 : 36,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(isListening ? 6 : 18),
-                                      ),
-                                      child: isListening
-                                          ? Icon(
-                                              Icons.stop_rounded,
-                                              color: Colors.red.shade900,
-                                              size: 20,
-                                            )
-                                          : const Icon(
-                                              Icons.mic_rounded,
-                                              color: AppTheme.deepCrimson,
-                                              size: 22,
-                                            ),
-                                    ),
+                    // ── Central Power Button ────────────────────────────────
+                    Center(
+                      child: AnimatedPressButton(
+                        onPressed: () => _toggleContinuousListening(appState, speechService),
+                        backgroundColor: isListening ? activeColor : AppTheme.deepCrimson,
+                        borderRadius: 50,
+                        padding: EdgeInsets.zero,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isListening ? activeColor : AppTheme.deepCrimson).withValues(alpha: 0.45),
+                            blurRadius: isListening ? 22 : 12,
+                            spreadRadius: isListening ? 3 : 1,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        child: SizedBox(
+                          width: 76,
+                          height: 76,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Outer ring
+                              Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: isListening ? 0.5 : 0.25),
+                                    width: 2,
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                              // Icon
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 180),
+                                transitionBuilder: (child, animation) =>
+                                    ScaleTransition(scale: animation, child: child),
+                                child: Icon(
+                                  isListening ? Icons.stop_rounded : Icons.mic_rounded,
+                                  key: ValueKey(isListening),
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-
-                        // Right Waveform Bars
-                        _buildWaveformBars(isListening, isLeft: false),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    Text(
-                      isListening
-                          ? (isHindiUi
-                              ? '🔴 निरंतर रिकॉर्डिंग चालू है (माइक हमेशा सुन रहा है)'
-                              : '🔴 Continuous Studio Recording Active (Tap to Stop)')
-                          : (isHindiUi
-                              ? 'रिकॉर्डर शुरू करने के लिए बटन या स्विच दबाएं'
-                              : 'Tap Studio Mic Button to Start Continuous Recording'),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isListening ? Colors.white70 : AppTheme.textMuted,
                       ),
-                      textAlign: TextAlign.center,
                     ),
 
                     const SizedBox(height: 14),
 
-                    // Full-width Professional Action Button
+                    // ── Status Label ────────────────────────────────────────
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        isListening
+                            ? (isHindiUi
+                                ? '🔴 माइक चालू — बोलना जारी रखें'
+                                : '🔴 Mic Live — Speak continuously')
+                            : (isHindiUi
+                                ? 'माइक चालू करने के लिए बटन दबाएं'
+                                : 'Tap button or switch to start recording'),
+                        key: ValueKey(isListening),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isListening ? Colors.white60 : Colors.grey.shade500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // ── Full-Width Action Button ─────────────────────────────
                     SizedBox(
                       width: double.infinity,
                       child: AnimatedPressButton(
                         onPressed: () => _toggleContinuousListening(appState, speechService),
                         backgroundColor: isListening ? Colors.white : AppTheme.deepCrimson,
-                        foregroundColor: isListening ? Colors.red.shade900 : Colors.white,
+                        foregroundColor: isListening ? Colors.red.shade800 : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 13),
-                        borderRadius: 16,
+                        borderRadius: 14,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isListening ? Colors.red.shade200 : AppTheme.deepCrimson)
+                                .withValues(alpha: 0.28),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              isListening ? Icons.stop_circle_rounded : Icons.fiber_manual_record_rounded,
-                              size: 18,
-                              color: isListening ? Colors.red.shade900 : Colors.white,
+                              isListening ? Icons.stop_circle_rounded : Icons.radio_button_on_rounded,
+                              size: 17,
+                              color: isListening ? Colors.red.shade800 : Colors.white,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               isListening
-                                  ? (isHindiUi ? 'रिकॉर्डिंग बंद करें (STOP RECORDING)' : 'STOP STUDIO RECORDING')
-                                  : (isHindiUi ? 'रिकॉर्डिंग शुरू करें (START RECORDING)' : 'START CONTINUOUS RECORDING'),
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.3),
+                                  ? (isHindiUi ? 'रिकॉर्डिंग बंद करें' : 'STOP RECORDING')
+                                  : (isHindiUi ? 'रिकॉर्डिंग शुरू करें' : 'START RECORDING'),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                              ),
                             ),
                           ],
                         ),
@@ -801,6 +740,7 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
       ),
     );
   }
+
 
   /// 3. Live Translation Subtitle Stage Card
   Widget _buildLiveSubtitleStageCard(BuildContext context, AppState appState, bool isHindiUi) {
@@ -849,17 +789,56 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.lightCream,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  appState.currentSource.label,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.deepCrimson),
-                ),
+              Wrap(
+                spacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (appState.hasEnrolledVoice)
+                    Builder(
+                      builder: (context) {
+                        final vm = appState.lastVoiceMatch;
+                        final isFiltered = vm != null && !vm.isMatched;
+                        final bg = isFiltered ? Colors.amber.shade900 : Colors.green.shade800;
+                        final label = vm != null
+                            ? (vm.isMatched
+                                ? 'Voice: ${(vm.similarityScore * 100).toStringAsFixed(0)}% 🛡️'
+                                : 'Filtered: ${(vm.similarityScore * 100).toStringAsFixed(0)}% ⚠️')
+                            : '75% Shield Active 🛡️';
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: bg,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(isFiltered ? Icons.warning_amber_rounded : Icons.security, color: Colors.white, size: 12),
+                              const SizedBox(width: 4),
+                              Text(
+                                label,
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.lightCream,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      appState.currentSource.label,
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.deepCrimson),
+                    ),
+                  ),
+                ],
               ),
+
             ],
           ),
 
@@ -1040,6 +1019,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
       targetLanguage: appState.targetLanguage,
       lessonTopic: appState.currentLessonTopic,
       teacherName: appState.teacherName,
+      teacherSchool: appState.teacherSchool,
+      teacherDesignation: appState.teacherDesignation,
+      teacherEmail: appState.teacherEmail,
     );
 
     showModalBottomSheet(
@@ -1118,6 +1100,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                             targetLanguage: appState.targetLanguage,
                             lessonTopic: appState.currentLessonTopic,
                             teacherName: appState.teacherName,
+                            teacherSchool: appState.teacherSchool,
+                            teacherDesignation: appState.teacherDesignation,
+                            teacherEmail: appState.teacherEmail,
                           );
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1144,6 +1129,9 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                             targetLanguage: appState.targetLanguage,
                             lessonTopic: appState.currentLessonTopic,
                             teacherName: appState.teacherName,
+                            teacherSchool: appState.teacherSchool,
+                            teacherDesignation: appState.teacherDesignation,
+                            teacherEmail: appState.teacherEmail,
                           );
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1213,16 +1201,21 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                       targetLanguage: appState.targetLanguage,
                       lessonTopic: appState.currentLessonTopic,
                       teacherName: appState.teacherName,
+                      teacherSchool: appState.teacherSchool,
+                      teacherDesignation: appState.teacherDesignation,
+                      teacherEmail: appState.teacherEmail,
                     );
+                    await appState.saveCurrentTeachingSession(txtPath: file.path);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Raw Speech Notes (.txt) saved to Downloads:\n${file.path}'),
+                          content: Text('Raw Speech Notes (.txt) saved to Downloads & Session History:\n${file.path}'),
                           backgroundColor: Colors.brown.shade800,
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
                     }
+
                   } catch (e) {
                     debugPrint('Download error: $e');
                   }
@@ -1434,9 +1427,24 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                             children: [
                               const Icon(Icons.person, size: 16, color: AppTheme.deepCrimson),
                               const SizedBox(width: 8),
-                              Text(
-                                'Teacher: ${appState.teacherName}',
-                                style: const TextStyle(fontSize: 12, color: AppTheme.textDark),
+                              Expanded(
+                                child: Text(
+                                  'Teacher: ${appState.teacherName} (${appState.teacherDesignation})',
+                                  style: const TextStyle(fontSize: 12, color: AppTheme.textDark),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.school, size: 16, color: AppTheme.deepCrimson),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'School: ${appState.teacherSchool}',
+                                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                ),
                               ),
                             ],
                           ),
@@ -1479,18 +1487,23 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                                   targetLanguage: appState.targetLanguage,
                                   lessonTopic: appState.currentLessonTopic,
                                   teacherName: appState.teacherName,
+                                  teacherSchool: appState.teacherSchool,
+                                  teacherDesignation: appState.teacherDesignation,
+                                  teacherEmail: appState.teacherEmail,
                                 );
+                                await appState.saveCurrentTeachingSession(docxPath: file.path);
                                 if (dialogContext.mounted) {
                                   Navigator.of(dialogContext).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Study Material Word file (.docx) downloaded to Downloads:\n${file.path}'),
+                                      content: Text('Study Material Word file (.docx) downloaded to Downloads & Profile History:\n${file.path}'),
                                       backgroundColor: AppTheme.deepCrimson,
                                       behavior: SnackBarBehavior.floating,
                                       duration: const Duration(seconds: 4),
                                     ),
                                   );
                                 }
+
                               } catch (e) {
                                 setDialogState(() => isDownloading = false);
                               }
@@ -1516,8 +1529,8 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
       speechService.stopContinuousListening();
     } else {
       speechService.startContinuousTeacherSpeechStream(
-        onChunkRecognized: (text) {
-          appState.processTranslation(text);
+        onChunkRecognized: (text, metrics) {
+          appState.processTranslation(text, deliveryMetrics: metrics);
         },
         onPartialRecognized: (partial) {
           appState.updateLivePartialText(partial);
@@ -1526,77 +1539,5 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
     }
   }
 
-  void _showUserProfileModal(BuildContext context, AppState appState) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      backgroundColor: AppTheme.cardWhite,
-      builder: (context) {
-        final user = appState.currentUser!;
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.account_circle, size: 60, color: AppTheme.deepCrimson),
-              const SizedBox(height: 12),
-              Text(
-                user.name,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textDark),
-              ),
-              Text(
-                user.email,
-                style: const TextStyle(fontSize: 14, color: AppTheme.textMuted),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: AnimatedPressButton(
-                  onPressed: () {
-                    appState.signOut();
-                    Navigator.of(context).pop();
-                  },
-                  backgroundColor: Colors.red.shade700,
-                  child: const Text('Sign Out'),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
-  Widget _buildWaveformBars(bool isListening, {required bool isLeft}) {
-    const barCount = 5;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(barCount, (index) {
-        return AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            final cycle = (index * 0.2 + (isLeft ? 0.0 : 0.5)) % 1.0;
-            final val = (cycle + _pulseController.value) % 1.0;
-            final height = isListening
-                ? (8.0 + 22.0 * (0.5 + 0.5 * (val - 0.5).abs()))
-                : (6.0 + (index % 3) * 3.0);
-
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              width: 4,
-              height: height,
-              decoration: BoxDecoration(
-                color: isListening
-                    ? Colors.white.withValues(alpha: 0.6 + 0.4 * (val > 0.5 ? 1.0 : 0.5))
-                    : AppTheme.deepCrimson.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            );
-          },
-        );
-      }),
-    );
-  }
 }

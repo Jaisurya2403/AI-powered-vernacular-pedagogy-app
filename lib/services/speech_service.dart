@@ -7,6 +7,8 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../models/app_models.dart';
 import '../engine/hindi_text_normalizer.dart';
 import '../engine/ol_chiki_transliteration.dart';
+import '../engine/speech_segmenter.dart';
+import '../engine/voice_biometrics_engine.dart';
 import 'web_speech_helper.dart';
 import 'web_stt_engine.dart'; // Chrome-specific continuous STT engine
 
@@ -38,8 +40,14 @@ class SpeechService extends ChangeNotifier {
   Timer? _voskPollTimer;
   int    _lastVoskIndex = 0;
 
-  Function(String text)?    _activeResultCallback;
+  Function(String text, SpeechDeliveryMetrics? metrics)? _activeResultCallback;
   Function(String partial)? _activePartialCallback;
+
+  // ── Delivery Timing Metrics Trackers ─────────────────────────────────────────
+  DateTime? _chunkStartTime;
+  DateTime? _firstPartialTime;
+  int       _partialUpdateCount = 0;
+  DateTime? _lastEmittedSentenceEndTime;
 
   final Set<String>  _submittedSentenceHashes = {};
   final List<String> _submittedSentenceList    = [];
@@ -352,7 +360,7 @@ class SpeechService extends ChangeNotifier {
   void reEngageMicIfEnabled() {
     if (!_isListening) return;
     if (kIsWeb) {
-      // WebSttEngine manages its own restart — nothing needed
+      // WebSttEngine manages its own restart
     } else if (!_speechToText.isListening && !_nativeMicBusy) {
       _scheduleNativeReEngage(fromAbort: false);
     }
@@ -381,7 +389,7 @@ class SpeechService extends ChangeNotifier {
   void toggleAudioOutputDevice() => toggleAudioOutput();
 
   Future<void> startContinuousTeacherSpeechStream({
-    required Function(String text) onChunkRecognized,
+    required Function(String text, SpeechDeliveryMetrics? metrics) onChunkRecognized,
     Function(String partial)? onPartialRecognized,
     String localeId = 'hi_IN',
   }) =>
@@ -395,7 +403,7 @@ class SpeechService extends ChangeNotifier {
 
   // ── Public API: Start ────────────────────────────────────────────────────────
   Future<void> startListening({
-    required Function(String text) onResultText,
+    required Function(String text, SpeechDeliveryMetrics? metrics) onResultText,
     Function(String partial)? onPartialText,
     String localeId = 'hi_IN',
   }) async {
@@ -405,6 +413,9 @@ class SpeechService extends ChangeNotifier {
     _isReEngaging         = false;
     _pendingListenStart   = false;
     _lastSubmittedChunk   = '';
+    _chunkStartTime       = null;
+    _firstPartialTime     = null;
+    _partialUpdateCount   = 0;
     _submittedSentenceHashes.clear();
     _submittedSentenceList.clear();
     _uncommittedBuffer    = '';
@@ -427,19 +438,18 @@ class SpeechService extends ChangeNotifier {
 
     if (kIsWeb) {
       // ── WEB PATH: Chrome Direct SpeechRecognition (continuous=true) ──────────
-      // WebSttEngine manages its own restarts internally. We just hand it the
-      // locale and a callback. No watchdog or re-engage timers needed here.
       startWebStt(localeId, onResult: (text, isFinal) {
         if (text.trim().isEmpty) return;
         if (isFinal) {
           _processSpeechStream(text);
         } else {
-          // Partial results: send to UI but don't translate yet
           _activePartialCallback?.call(HindiTextNormalizer.normalize(text));
+          // Real-time paragraph parsing for partial streams
+          _handlePartialParagraphStream(text);
         }
       });
     } else {
-      // ── NATIVE PATH: speech_to_text + watchdog (works fine on Android/iOS) ───
+      // ── NATIVE PATH: speech_to_text + watchdog
       await initializeSpeech();
       _startNativeWatchdog();
       if (_speechInitialized && !_speechToText.isListening) {
@@ -459,7 +469,44 @@ class SpeechService extends ChangeNotifier {
     } catch (_) {}
   }
 
-  // ── Speech stream processing (shared web + native) ───────────────────────────
+  // ── Robust Paragraph & Sentence Stream Processing ────────────────────────────
+  void _handlePartialParagraphStream(String partialText) {
+    if (_activeResultCallback == null || !_isListening) return;
+
+    final normalized = HindiTextNormalizer.normalize(partialText).trim();
+    if (normalized.isEmpty) return;
+
+    final now = DateTime.now();
+    _chunkStartTime ??= now;
+    _firstPartialTime ??= now;
+    _partialUpdateCount++;
+
+    // Split stream into coherent sentences
+    final sentences = SpeechSegmenter.segmentParagraph(normalized);
+    if (sentences.length > 1) {
+      // All but the last sentence are complete! Emit them immediately
+      for (int i = 0; i < sentences.length - 1; i++) {
+        _emitSentenceIfNew(sentences[i]);
+      }
+      _uncommittedBuffer = sentences.last;
+    } else if (sentences.isNotEmpty) {
+      _uncommittedBuffer = sentences.first;
+    }
+
+    // Dynamic 500ms Gap / Pause Point Detector:
+    // When the teacher stops speaking for 500ms, mark as a Pronounce Point and translate!
+    _silenceFlushTimer?.cancel();
+    if (_uncommittedBuffer.isNotEmpty) {
+      _silenceFlushTimer = Timer(const Duration(milliseconds: 500), () {
+        if (_isListening && _uncommittedBuffer.isNotEmpty) {
+          debugPrint('[SpeechService Pronounce Point] Gap detected, finalizing: $_uncommittedBuffer');
+          _emitSentenceIfNew(_uncommittedBuffer);
+          _uncommittedBuffer = '';
+        }
+      });
+    }
+  }
+
   void _processSpeechStream(String rawRecognizedText) {
     if (_activeResultCallback == null || !_isListening) return;
     final normalized = HindiTextNormalizer.normalize(rawRecognizedText).trim();
@@ -473,58 +520,58 @@ class SpeechService extends ChangeNotifier {
     }
 
     _silenceFlushTimer?.cancel();
-    final rawParts = normalized.split(RegExp(r'(?<=[।\.?!\n,;\-])'));
-    String pendingRemainder = '';
 
-    for (int i = 0; i < rawParts.length; i++) {
-      final part = rawParts[i].trim();
-      if (part.isEmpty) continue;
-      final isCompleteClause = RegExp(r'[।\.?!\n,;\-]$').hasMatch(part);
-      if (isCompleteClause || i < rawParts.length - 1) {
-        _emitSentenceIfNew(part);
-      } else {
-        pendingRemainder = part;
-      }
+    // Segment full paragraph into distinct complete sentences
+    final sentences = SpeechSegmenter.segmentParagraph(normalized);
+    for (final sentence in sentences) {
+      _emitSentenceIfNew(sentence);
     }
-
-    _uncommittedBuffer = pendingRemainder;
-
-    if (_uncommittedBuffer.isNotEmpty) {
-      _silenceFlushTimer = Timer(const Duration(milliseconds: 450), () {
-        if (_isListening && _uncommittedBuffer.isNotEmpty) {
-          _emitSentenceIfNew(_uncommittedBuffer);
-          _uncommittedBuffer = '';
-        }
-      });
-    }
+    _uncommittedBuffer = '';
   }
 
   void _emitSentenceIfNew(String sentence) {
     final cleaned = HindiTextNormalizer.normalize(sentence).trim();
     if (cleaned.isEmpty) return;
 
-    String delta = cleaned;
-    for (final prev in _submittedSentenceList) {
-      if (prev.isNotEmpty && delta.startsWith(prev)) {
-        delta = delta.substring(prev.length).trim();
-      }
-    }
+    final key = cleaned.replaceAll(RegExp(r'[\s\.\।\?!\n,;\-]'), '').toLowerCase();
+    if (key.isEmpty) return;
 
-    final cleanedDelta = HindiTextNormalizer.normalize(delta).trim();
-    if (cleanedDelta.isEmpty) return;
-
-    final key = cleanedDelta.replaceAll(RegExp(r'\s+'), '').toLowerCase();
+    // Self-emitted TTS echo filter
     if (_recentlySpokenTtsHashes.contains(key)) return;
 
+    // Check if exact sentence was already emitted recently
     if (!_submittedSentenceHashes.contains(key)) {
       _submittedSentenceHashes.add(key);
       _submittedSentenceList.add(cleaned);
-      _lastSubmittedChunk = cleanedDelta;
-      _activeResultCallback?.call(cleanedDelta);
-      _syncChunkToVoskMicroservice(cleanedDelta);
-      debugPrint('[SpeechService Chunk Emitted] $cleanedDelta');
+      _lastSubmittedChunk = cleaned;
+
+      final now = DateTime.now();
+      final chunkStart = _chunkStartTime ?? now;
+      final firstPartial = _firstPartialTime ?? chunkStart;
+      final durMs = now.difference(chunkStart).inMilliseconds.toDouble().clamp(200.0, 15000.0);
+      final lagMs = now.difference(firstPartial).inMilliseconds.toDouble().clamp(100.0, 8000.0);
+      final pauseMs = _lastEmittedSentenceEndTime != null
+          ? chunkStart.difference(_lastEmittedSentenceEndTime!).inMilliseconds.toDouble().clamp(0.0, 5000.0)
+          : 500.0;
+
+      final deliveryMetrics = SpeechDeliveryMetrics(
+        spokenText: cleaned,
+        durationMs: durMs,
+        partialUpdateCount: _partialUpdateCount.clamp(1, 30),
+        partialToFinalMs: lagMs,
+        interSentencePauseMs: pauseMs,
+      );
+
+      _lastEmittedSentenceEndTime = now;
+      _chunkStartTime = null;
+      _firstPartialTime = null;
+      _partialUpdateCount = 0;
+
+      _activeResultCallback?.call(cleaned, deliveryMetrics);
+      _syncChunkToVoskMicroservice(cleaned);
+      debugPrint('[SpeechService Sentence Emitted at Pronounce Point] $cleaned ($deliveryMetrics)');
     } else {
-      debugPrint('[SpeechService Duplicate Skipped] $cleanedDelta');
+      debugPrint('[SpeechService Duplicate Sentence Skipped] $cleaned');
     }
   }
 
@@ -549,7 +596,7 @@ class SpeechService extends ChangeNotifier {
     notifyListeners();
 
     if (kIsWeb) {
-      stopWebStt(); // Tell Chrome's SpeechRecognition to stop
+      stopWebStt();
     } else if (_speechInitialized) {
       try { await _speechToText.stop(); } catch (_) {}
     }

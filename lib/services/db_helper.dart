@@ -23,171 +23,167 @@ class DbHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await _createTablesAndSeed(db);
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await _createTablesAndSeed(db);
+      },
+      onOpen: (db) async {
+        await _createTablesAndSeed(db);
+      },
     );
+
   }
 
   static Future<void> _createTablesAndSeed(Database db) async {
-        // 1. Users Table (Legacy/Auth compatibility)
-        await db.execute('''
-          CREATE TABLE users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            is_verified INTEGER DEFAULT 0,
-            created_at TEXT
-          )
-        ''');
+    // 1. Users Table (Auth with school/designation)
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        school TEXT DEFAULT 'Government Primary School',
+        designation TEXT DEFAULT 'Primary Vernacular Teacher',
+        password_hash TEXT NOT NULL,
+        is_verified INTEGER DEFAULT 0,
+        has_voiceprint INTEGER DEFAULT 0,
+        created_at TEXT
+      )
+    ''');
 
-        // 2. Teachers Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE teachers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            school TEXT,
-            password_hash TEXT NOT NULL,
-            is_email_verified INTEGER DEFAULT 0,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
+    // 2. App Settings / Persistent Session Table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    ''');
 
-        // 3. Voiceprints Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE voiceprints (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            teacher_id INTEGER NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
-            embedding BLOB NOT NULL,
-            sample_count INTEGER NOT NULL,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
+    // 3. Voiceprints Table (Acoustic biometric embeddings)
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS voiceprints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        teacher_id INTEGER NOT NULL UNIQUE,
+        embedding TEXT NOT NULL,
+        sample_count INTEGER NOT NULL DEFAULT 1,
+        prompt_text TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
 
-        // 4. Sessions Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            teacher_id INTEGER NOT NULL REFERENCES teachers(id),
-            class_name TEXT,
-            started_at TEXT,
-            ended_at TEXT
-          )
-        ''');
+    // 4. Teaching Sessions History Table (Date-wise structured logs)
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS teaching_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        topic TEXT NOT NULL,
+        teacher_name TEXT NOT NULL,
+        target_language TEXT NOT NULL,
+        date_str TEXT NOT NULL,
+        time_str TEXT NOT NULL,
+        total_sentences INTEGER DEFAULT 0,
+        notes_file_path TEXT,
+        docx_file_path TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
 
-        // 5. Transcripts Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE transcripts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-            sequence_no INTEGER NOT NULL,
-            direction TEXT CHECK(direction IN ('hi_to_sat','sat_to_hi')) NOT NULL,
-            source_text TEXT,
-            target_text TEXT,
-            source_lang_confidence REAL,
-            asr_ms INTEGER, mt_ms INTEGER, tts_ms INTEGER,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
+    // 5. Teachers Table (§5 Legacy Schema compatibility)
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS teachers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        school TEXT,
+        password_hash TEXT NOT NULL,
+        is_email_verified INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
 
-        // 6. Curriculum Units Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE curriculum_units (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nipun_outcome_code TEXT,
-            grade_level INTEGER,
-            hindi_content TEXT NOT NULL,
-            santali_content TEXT,
-            content_type TEXT CHECK(content_type IN ('lesson','activity','assessment')) NOT NULL,
-            version INTEGER DEFAULT 1,
-            synced_at TEXT
-          )
-        ''');
+    // 6. Flashcards Table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS flashcards (
+        id TEXT PRIMARY KEY,
+        hindi_word TEXT NOT NULL,
+        tribal_word TEXT NOT NULL,
+        english_meaning TEXT,
+        phonetic TEXT,
+        icon_symbol TEXT,
+        example_hindi TEXT,
+        example_tribal TEXT,
+        curriculum_unit_id INTEGER
+      )
+    ''');
 
-        // 7. Flashcards Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE flashcards (
-            id TEXT PRIMARY KEY,
-            hindi_word TEXT NOT NULL,
-            tribal_word TEXT NOT NULL,
-            english_meaning TEXT,
-            phonetic TEXT,
-            icon_symbol TEXT,
-            example_hindi TEXT,
-            example_tribal TEXT,
-            curriculum_unit_id INTEGER REFERENCES curriculum_units(id)
-          )
-        ''');
+    // 7. Phrase Bank Table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS phrase_bank (
+        id TEXT PRIMARY KEY,
+        category TEXT,
+        hindi TEXT,
+        english TEXT,
+        santhali TEXT,
+        santhali_devanagari TEXT,
+        ho TEXT,
+        mundari TEXT,
+        phonetic TEXT
+      )
+    ''');
 
-        // 8. Worksheets Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE worksheets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            curriculum_unit_id INTEGER REFERENCES curriculum_units(id),
-            teacher_id INTEGER REFERENCES teachers(id),
-            file_path TEXT,
-            generated_at TEXT DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
+    // 8. Word Dictionary Table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS word_dictionary (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hindi_word TEXT NOT NULL,
+        tribal_word TEXT NOT NULL,
+        language TEXT NOT NULL,
+        phonetic TEXT
+      )
+    ''');
 
-        // 9. Sync Queue Table (§5 Schema)
-        await db.execute('''
-          CREATE TABLE sync_queue (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            entity_type TEXT,
-            entity_id INTEGER,
-            action TEXT,
-            synced INTEGER DEFAULT 0,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
+    // 9. Session Conversation Logs Table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS session_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        session_id INTEGER,
+        original_text TEXT NOT NULL,
+        translated_text TEXT NOT NULL,
+        phonetic_text TEXT,
+        language TEXT NOT NULL,
+        source TEXT NOT NULL,
+        latency_ms REAL NOT NULL,
+        created_at TEXT
+      )
+    ''');
 
-        // 10. Phrase Bank Table
-        await db.execute('''
-          CREATE TABLE phrase_bank (
-            id TEXT PRIMARY KEY,
-            category TEXT,
-            hindi TEXT,
-            english TEXT,
-            santhali TEXT,
-            santhali_devanagari TEXT,
-            ho TEXT,
-            mundari TEXT,
-            phonetic TEXT
-          )
-        ''');
+    // Safe column migrations for pre-existing SQLite database versions
+    try {
+      await db.execute('ALTER TABLE users ADD COLUMN school TEXT DEFAULT "Government Primary School"');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE users ADD COLUMN designation TEXT DEFAULT "Primary Vernacular Teacher"');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE users ADD COLUMN has_voiceprint INTEGER DEFAULT 0');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE session_logs ADD COLUMN user_id INTEGER');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE session_logs ADD COLUMN session_id INTEGER');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE voiceprints ADD COLUMN prompt_text TEXT');
+    } catch (_) {}
 
-        // 11. Word Dictionary Table
-        await db.execute('''
-          CREATE TABLE word_dictionary (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            hindi_word TEXT NOT NULL,
-            tribal_word TEXT NOT NULL,
-            language TEXT NOT NULL,
-            phonetic TEXT
-          )
-        ''');
-
-        // 12. Session Conversation Logs Table
-        await db.execute('''
-          CREATE TABLE session_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            original_text TEXT NOT NULL,
-            translated_text TEXT NOT NULL,
-            phonetic_text TEXT,
-            language TEXT NOT NULL,
-            source TEXT NOT NULL,
-            latency_ms REAL NOT NULL,
-            created_at TEXT
-          )
-        ''');
-
-        // Seed initial data into SQLite Database
-        await _seedDatabase(db);
+    // Seed initial data into SQLite Database
+    await _seedDatabase(db);
   }
+
 
   static String _hashPassword(String password) {
     final bytes = utf8.encode(password);
@@ -196,6 +192,10 @@ class DbHelper {
 
   static Future<void> _seedDatabase(Database db) async {
     try {
+      // Check if already seeded
+      final existingPhrases = await db.query('phrase_bank', limit: 1);
+      if (existingPhrases.isNotEmpty) return;
+
       // Seed Phrase Bank from JSON asset
       final phraseJsonStr = await rootBundle.loadString('assets/phrase_bank/classroom_phrases.json');
       final phraseData = json.decode(phraseJsonStr) as Map<String, dynamic>;
@@ -231,7 +231,7 @@ class DbHelper {
           'tribal_word': entry.value.toString(),
           'language': 'santhali',
           'phonetic': entry.value.toString(),
-        });
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // Seed Flashcards from default data
@@ -256,23 +256,58 @@ class DbHelper {
     }
   }
 
+  // --- PERSISTENT AUTH & ACTIVE USER SESSION ---
+
+  static Future<void> setActiveUserSession(String email) async {
+    final db = await database;
+    await db.insert(
+      'app_settings',
+      {'key': 'active_user_email', 'value': email.trim().toLowerCase()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<String?> getActiveUserSession() async {
+    final db = await database;
+    final results = await db.query(
+      'app_settings',
+      where: 'key = ?',
+      whereArgs: ['active_user_email'],
+    );
+    if (results.isNotEmpty) {
+      return results.first['value']?.toString();
+    }
+    return null;
+  }
+
+  static Future<void> clearActiveUserSession() async {
+    final db = await database;
+    await db.delete('app_settings', where: 'key = ?', whereArgs: ['active_user_email']);
+  }
+
   // --- AUTHENTICATION SQLITE OPERATIONS ---
 
   static Future<int> registerUser({
     required String name,
     required String email,
     required String password,
+    String school = 'Government Primary School',
+    String designation = 'Primary Vernacular Teacher',
   }) async {
     final db = await database;
     final passwordHash = _hashPassword(password);
     return await db.insert('users', {
       'name': name,
       'email': email.trim().toLowerCase(),
+      'school': school,
+      'designation': designation,
       'password_hash': passwordHash,
       'is_verified': 0,
+      'has_voiceprint': 0,
       'created_at': DateTime.now().toIso8601String(),
-    });
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
+
 
   static Future<void> markUserVerified(String email) async {
     final db = await database;
@@ -297,6 +332,7 @@ class DbHelper {
     );
 
     if (results.isNotEmpty) {
+      await setActiveUserSession(email);
       return results.first;
     }
     return null;
@@ -316,6 +352,26 @@ class DbHelper {
     return null;
   }
 
+  static Future<bool> updateUserProfile({
+    required int userId,
+    required String name,
+    required String school,
+    String? designation,
+  }) async {
+    final db = await database;
+    final count = await db.update(
+      'users',
+      {
+        'name': name.trim(),
+        'school': school.trim(),
+        if (designation != null) 'designation': designation.trim(),
+      },
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+    return count > 0;
+  }
+
   static Future<bool> updatePassword({
     required String email,
     required String newPassword,
@@ -329,6 +385,76 @@ class DbHelper {
       whereArgs: [email.trim().toLowerCase()],
     );
     return count > 0;
+  }
+
+  // --- VOICEPRINT BIOMETRICS SQLITE OPERATIONS ---
+
+  static Future<void> saveVoiceprint(VoiceprintModel voiceprint) async {
+    final db = await database;
+    await db.insert(
+      'voiceprints',
+      {
+        'teacher_id': voiceprint.userId,
+        'embedding': voiceprint.embedding,
+        'sample_count': voiceprint.sampleCount,
+        'prompt_text': voiceprint.promptText,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    // Update user flag
+    await db.update(
+      'users',
+      {'has_voiceprint': 1},
+      where: 'id = ?',
+      whereArgs: [voiceprint.userId],
+    );
+  }
+
+  static Future<VoiceprintModel?> getVoiceprintForUser(int userId) async {
+    final db = await database;
+    final results = await db.query(
+      'voiceprints',
+      where: 'teacher_id = ?',
+      whereArgs: [userId],
+    );
+
+    if (results.isNotEmpty) {
+      return VoiceprintModel.fromMap(results.first);
+    }
+    return null;
+  }
+
+  static Future<void> deleteVoiceprint(int userId) async {
+    final db = await database;
+    await db.delete('voiceprints', where: 'teacher_id = ?', whereArgs: [userId]);
+    await db.update('users', {'has_voiceprint': 0}, where: 'id = ?', whereArgs: [userId]);
+  }
+
+  // --- TEACHING SESSIONS HISTORY SQLITE OPERATIONS ---
+
+  static Future<int> saveTeachingSession(TeachingSessionModel session) async {
+    final db = await database;
+    return await db.insert(
+      'teaching_sessions',
+      session.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<List<TeachingSessionModel>> fetchTeachingSessionsForUser(int? userId) async {
+    final db = await database;
+    final results = userId != null
+        ? await db.query('teaching_sessions', where: 'user_id = ?', whereArgs: [userId], orderBy: 'id DESC')
+        : await db.query('teaching_sessions', orderBy: 'id DESC');
+
+    return results.map((map) => TeachingSessionModel.fromMap(map)).toList();
+  }
+
+  static Future<void> deleteTeachingSession(int sessionId) async {
+    final db = await database;
+    await db.delete('teaching_sessions', where: 'id = ?', whereArgs: [sessionId]);
   }
 
   // --- DYNAMIC DATA FETCHING FROM SQLITE ---
@@ -385,13 +511,13 @@ class DbHelper {
     }).toList();
   }
 
-  static Future<void> saveSessionLogToDb(TranslationResult log) async {
+  static Future<void> saveSessionLogToDb(TranslationResult log, {int? userId, int? sessionId}) async {
     final db = await database;
 
     final cleanInput = log.originalText.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (cleanInput.isEmpty) return;
 
-    final inputKey = cleanInput.replaceAll(RegExp(r'[\s\.\।\?!\n,]'), '').toLowerCase();
+    final inputKey = cleanInput.replaceAll(RegExp(r'[\s\.\।\?!\n,;\-]'), '').toLowerCase();
 
     // Fetch existing session logs in chronological order
     final existingRows = await db.query('session_logs', orderBy: 'id ASC');
@@ -400,12 +526,12 @@ class DbHelper {
       final lastRow = existingRows.last;
       final lastId = lastRow['id'] as int;
       final lastOriginal = lastRow['original_text'].toString().trim().replaceAll(RegExp(r'\s+'), ' ');
-      final lastKey = lastOriginal.replaceAll(RegExp(r'[\s\.\।\?!\n,]'), '').toLowerCase();
+      final lastKey = lastOriginal.replaceAll(RegExp(r'[\s\.\।\?!\n,;\-]'), '').toLowerCase();
 
       // 1. Exact match with last entry -> Skip
       if (inputKey == lastKey) return;
 
-      // 2. New input is a longer superset / expansion of the last entry -> Update last entry in DB!
+      // 2. New input is a longer superset / expansion of the immediate last entry -> Update last entry in DB
       if (inputKey.startsWith(lastKey) || inputKey.contains(lastKey)) {
         if (inputKey.length > lastKey.length) {
           await db.update(
@@ -433,19 +559,12 @@ class DbHelper {
       if (lastKey.startsWith(inputKey) || lastKey.contains(inputKey)) {
         return;
       }
-
-      // 4. Check if new input is a substring of ANY previous entry in DB -> Skip
-      for (final row in existingRows) {
-        final rowOriginal = row['original_text'].toString().trim().replaceAll(RegExp(r'\s+'), ' ');
-        final rowKey = rowOriginal.replaceAll(RegExp(r'[\s\.\।\?!\n,]'), '').toLowerCase();
-        if (rowKey.contains(inputKey) || inputKey == rowKey) {
-          return;
-        }
-      }
     }
 
-    // 5. If it's a new independent sentence, insert as a new row
+    // 4. Insert as a new row in session logs
     await db.insert('session_logs', {
+      'user_id': userId,
+      'session_id': sessionId,
       'original_text': log.originalText,
       'translated_text': log.translatedText,
       'phonetic_text': log.phoneticText ?? '',
@@ -456,7 +575,7 @@ class DbHelper {
     });
   }
 
-  static Future<List<TranslationResult>> fetchSessionLogsFromDb() async {
+  static Future<List<TranslationResult>> fetchSessionLogsFromDb({int? userId}) async {
     final db = await database;
     final results = await db.query('session_logs', orderBy: 'id ASC');
 

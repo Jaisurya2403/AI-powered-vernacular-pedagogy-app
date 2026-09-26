@@ -12,6 +12,9 @@ class NotesGeneratorService {
     required TargetLanguage targetLanguage,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
+    String? teacherEmail,
   }) {
     final buffer = StringBuffer();
     final now = DateTime.now();
@@ -23,6 +26,11 @@ class NotesGeneratorService {
     buffer.writeln('================================================================================');
     buffer.writeln('  Date: $dateStr | Time: $timeStr');
     buffer.writeln('  Teacher Name: $teacherName');
+    buffer.writeln('  Designation: $teacherDesignation');
+    buffer.writeln('  School / Institution: $teacherSchool');
+    if (teacherEmail != null && teacherEmail.isNotEmpty) {
+      buffer.writeln('  Email: $teacherEmail');
+    }
     buffer.writeln('  Lesson Topic: $lessonTopic');
     buffer.writeln('  Target Vernacular Language: ${targetLanguage.displayName} ( Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ & Devanagari संथाली )');
     buffer.writeln('  Pedagogy Framework: NIPUN Bharat Foundational Literacy & Numeracy (FLN)');
@@ -32,7 +40,7 @@ class NotesGeneratorService {
     buffer.writeln('1. SYNOPSIS & LESSON EXECUTIVE SUMMARY');
     buffer.writeln('--------------------------------------------------------------------------------');
     buffer.writeln('• Executive Summary: This comprehensive study document consolidates all classroom speech delivered');
-    buffer.writeln('  by $teacherName on the topic "$lessonTopic".');
+    buffer.writeln('  by $teacherName ($teacherDesignation, $teacherSchool) on the topic "$lessonTopic".');
     buffer.writeln('• Total Speech Segments Recorded: ${sessionLogs.length} continuous speech sentences');
     buffer.writeln('• Primary Language Pair: Hindi (Teacher Speech) ➔ Santhali (Vernacular Bridge)');
     buffer.writeln('• Low-Latency AI Pipeline: < 50ms per 5-word real-time sliding window translation.\n');
@@ -107,19 +115,17 @@ class NotesGeneratorService {
       buffer.writeln('[Not enough classroom data to generate dynamic worksheets.]\n');
     } else {
       buffer.writeln('Instructions: Translate the following phrases discussed in class.\n');
-      
+
       int qNum = 1;
-      // Generate up to 5 questions based on actual session logs
       final questions = sessionLogs.take(5).toList();
       for (final log in questions) {
         final isSantali = log.isOriginalSantali;
         final sourceLang = isSantali ? 'Santhali' : 'Hindi';
         final targetLang = isSantali ? 'Hindi' : 'Santhali';
-        
+
         buffer.writeln('Q$qNum. Translate this $sourceLang phrase into $targetLang:');
         buffer.writeln('"${log.originalText}"');
-        // Gap for the student to write the answer (question then gap then question)
-        buffer.writeln('\n\n\n'); 
+        buffer.writeln('\n\n\n');
         qNum++;
       }
     }
@@ -137,12 +143,18 @@ class NotesGeneratorService {
     required TargetLanguage targetLanguage,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
+    String? teacherEmail,
   }) async {
     final content = generateBilingualDocContent(
       sessionLogs: sessionLogs,
       targetLanguage: targetLanguage,
       lessonTopic: lessonTopic,
       teacherName: teacherName,
+      teacherSchool: teacherSchool,
+      teacherDesignation: teacherDesignation,
+      teacherEmail: teacherEmail,
     );
 
     final sanitizedTopic = lessonTopic.replaceAll(RegExp(r'\s+'), '_').toLowerCase();
@@ -190,6 +202,9 @@ class NotesGeneratorService {
     required List<TranslationResult> logs,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
+    String? teacherEmail,
     TargetLanguage targetLanguage = TargetLanguage.santhali,
   }) {
     return exportSingleDocxFile(
@@ -197,6 +212,9 @@ class NotesGeneratorService {
       targetLanguage: targetLanguage,
       lessonTopic: lessonTopic,
       teacherName: teacherName,
+      teacherSchool: teacherSchool,
+      teacherDesignation: teacherDesignation,
+      teacherEmail: teacherEmail,
     );
   }
 
@@ -205,12 +223,18 @@ class NotesGeneratorService {
     required TargetLanguage targetLanguage,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
+    String? teacherEmail,
   }) async {
     final content = generateBilingualDocContent(
       sessionLogs: sessionLogs,
       targetLanguage: targetLanguage,
       lessonTopic: lessonTopic,
       teacherName: teacherName,
+      teacherSchool: teacherSchool,
+      teacherDesignation: teacherDesignation,
+      teacherEmail: teacherEmail,
     );
 
     final sanitizedTopic = lessonTopic.replaceAll(RegExp(r'\s+'), '_').toLowerCase();
@@ -237,6 +261,8 @@ class NotesGeneratorService {
     required TargetLanguage targetLanguage,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
   }) async {
     if (kIsWeb) {
       _activeLiveTxtPath = 'Live_Hindi_Classroom_Notes.txt';
@@ -250,7 +276,8 @@ class NotesGeneratorService {
     if (!await file.exists()) {
       final header = '''================================================================================
 NIPUN BHARAT - REAL-TIME CONTINUOUS CLASSROOM HINDI SPEECH NOTES
-Teacher: $teacherName | Topic: $lessonTopic
+Teacher: $teacherName ($teacherDesignation, $teacherSchool)
+Topic: $lessonTopic
 Target Vernacular Language: ${targetLanguage.displayName}
 ================================================================================\n\n''';
       await file.writeAsString(header, flush: true);
@@ -268,12 +295,21 @@ Target Vernacular Language: ${targetLanguage.displayName}
     required TargetLanguage targetLanguage,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
+    String? teacherEmail,
   }) async {
     final buffer = StringBuffer();
     buffer.writeln('================================================================================');
     buffer.writeln('          CONTINUOUS HINDI CLASSROOM SPEECH NOTES (.TXT)                       ');
     buffer.writeln('================================================================================');
-    buffer.writeln('Teacher: $teacherName | Topic: $lessonTopic');
+    buffer.writeln('Teacher: $teacherName');
+    buffer.writeln('Designation: $teacherDesignation');
+    buffer.writeln('School / Institution: $teacherSchool');
+    if (teacherEmail != null && teacherEmail.isNotEmpty) {
+      buffer.writeln('Email: $teacherEmail');
+    }
+    buffer.writeln('Topic: $lessonTopic');
     buffer.writeln('Target Language: ${targetLanguage.displayName}');
     buffer.writeln('================================================================================\n');
 
@@ -344,12 +380,18 @@ Target Vernacular Language: ${targetLanguage.displayName}
     required TargetLanguage targetLanguage,
     required String lessonTopic,
     required String teacherName,
+    String teacherSchool = 'Government Primary School',
+    String teacherDesignation = 'Primary Vernacular Teacher',
+    String? teacherEmail,
   }) {
     return exportSingleDocxFile(
       sessionLogs: sessionLogs,
       targetLanguage: targetLanguage,
       lessonTopic: lessonTopic,
       teacherName: teacherName,
+      teacherSchool: teacherSchool,
+      teacherDesignation: teacherDesignation,
+      teacherEmail: teacherEmail,
     );
   }
 }

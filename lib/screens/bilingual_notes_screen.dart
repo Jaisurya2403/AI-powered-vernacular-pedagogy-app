@@ -43,6 +43,9 @@ class _BilingualNotesScreenState extends State<BilingualNotesScreen> {
       targetLanguage: targetLang,
       lessonTopic: _topicController.text,
       teacherName: _teacherController.text,
+      teacherSchool: appState.teacherSchool,
+      teacherDesignation: appState.teacherDesignation,
+      teacherEmail: appState.teacherEmail,
     );
 
     return Container(
@@ -213,6 +216,9 @@ class _BilingualNotesScreenState extends State<BilingualNotesScreen> {
                                 targetLanguage: targetLang,
                                 lessonTopic: _topicController.text,
                                 teacherName: _teacherController.text,
+                                teacherSchool: appState.teacherSchool,
+                                teacherDesignation: appState.teacherDesignation,
+                                teacherEmail: appState.teacherEmail,
                               );
                               setState(() {
                                 _exportedFilePath = file.path;
@@ -261,6 +267,9 @@ class _BilingualNotesScreenState extends State<BilingualNotesScreen> {
                                 targetLanguage: targetLang,
                                 lessonTopic: _topicController.text,
                                 teacherName: _teacherController.text,
+                                teacherSchool: appState.teacherSchool,
+                                teacherDesignation: appState.teacherDesignation,
+                                teacherEmail: appState.teacherEmail,
                               );
                               setState(() {
                                 _exportedFilePath = file.path;

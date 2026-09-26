@@ -131,7 +131,7 @@ class WebSttEngine {
       }
     });
 
-    _rec!.onError.listen((event) {
+    _rec!.addEventListener('error', (html.Event event) {
       _isStarted = false;
       // dart:html types onError as plain Event; use JS interop for error code
       String error = 'unknown';
