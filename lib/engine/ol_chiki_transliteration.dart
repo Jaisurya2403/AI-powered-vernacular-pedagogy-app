@@ -62,6 +62,29 @@ class OlChikiTransliteration {
 
     String result = buffer.toString();
 
+    // Convert independent vowels after consonants to proper Devanagari matras
+    const consonants = 'कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसहड़ढ़';
+    result = result.replaceAllMapped(
+      RegExp('([$consonants])([अआइईउऊएऐओऔ])'),
+      (match) {
+        final c = match.group(1)!;
+        final v = match.group(2)!;
+        switch (v) {
+          case 'अ': return c;
+          case 'आ': return '$cा';
+          case 'इ': return '$cि';
+          case 'ई': return '$cी';
+          case 'उ': return '$cु';
+          case 'ऊ': return '$cू';
+          case 'ए': return '$cे';
+          case 'ऐ': return '$cै';
+          case 'ओ': return '$cो';
+          case 'औ': return '$cौ';
+          default: return '$c$v';
+        }
+      },
+    );
+
     // Strip out any residual raw Ol Chiki unicode characters (Range U+1C50 - U+1C7F)
     result = result.replaceAll(RegExp(r'[\u1C50-\u1C7F]'), '');
 

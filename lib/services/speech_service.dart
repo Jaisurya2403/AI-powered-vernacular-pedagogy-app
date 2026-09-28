@@ -293,23 +293,31 @@ class SpeechService extends ChangeNotifier {
       delayMs = (_baseRetryMs * (1 << (_consecutiveAborts - 1)))
           .clamp(_baseRetryMs, _maxRetryMs);
     } else {
-      delayMs = 80;
+      delayMs = 0; // 0ms delay for seamless native mobile recording
     }
     _reEngageTimer?.cancel();
-    _reEngageTimer = Timer(Duration(milliseconds: delayMs), () {
+    if (delayMs == 0) {
       if (_isListening && !_speechToText.isListening && !_nativeMicBusy) {
-        _doNativeReEngage();
+        _doNativeReEngage(fromAbort: false);
       }
-    });
+    } else {
+      _reEngageTimer = Timer(Duration(milliseconds: delayMs), () {
+        if (_isListening && !_speechToText.isListening && !_nativeMicBusy) {
+          _doNativeReEngage(fromAbort: true);
+        }
+      });
+    }
   }
 
-  Future<void> _doNativeReEngage() async {
+  Future<void> _doNativeReEngage({bool fromAbort = false}) async {
     if (!_isListening || _activeResultCallback == null) return;
     if (_nativeMicBusy || _speechToText.isListening) return;
     _isReEngaging = true;
     try {
-      try { await _speechToText.cancel(); } catch (_) {}
-      await Future.delayed(const Duration(milliseconds: 80));
+      if (fromAbort) {
+        try { await _speechToText.cancel(); } catch (_) {}
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
       if (!_isListening) return;
       _pendingListenStart = true;
       await _speechToText.listen(
@@ -325,7 +333,7 @@ class SpeechService extends ChangeNotifier {
         listenOptions: stt.SpeechListenOptions(
           localeId: _localeId ?? 'hi_IN',
           listenFor: const Duration(hours: 4),
-          pauseFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 60),
           cancelOnError: false,
           partialResults: true,
           listenMode: stt.ListenMode.dictation,

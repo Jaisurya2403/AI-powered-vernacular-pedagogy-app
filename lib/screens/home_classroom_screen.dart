@@ -1176,134 +1176,142 @@ class _HomeClassroomScreenState extends State<HomeClassroomScreen>
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (logs.isNotEmpty) ...[
-              const SizedBox(width: 6),
-              AnimatedPressButton(
-                onPressed: () => _showInlineNotesViewDialog(context, appState),
-                backgroundColor: Colors.teal.shade800,
-                borderRadius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                boxShadow: const [],
-                child: const Row(
-                  children: [
-                    Icon(Icons.visibility, color: Colors.white, size: 14),
-                    SizedBox(width: 4),
-                    Text('View Notes', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              AnimatedPressButton(
-                onPressed: () async {
-                  try {
-                    final file = await NotesGeneratorService.downloadLiveHindiNotesTxt(
-                      sessionLogs: appState.sessionLogs,
-                      targetLanguage: appState.targetLanguage,
-                      lessonTopic: appState.currentLessonTopic,
-                      teacherName: appState.teacherName,
-                      teacherSchool: appState.teacherSchool,
-                      teacherDesignation: appState.teacherDesignation,
-                      teacherEmail: appState.teacherEmail,
-                    );
-                    await appState.saveCurrentTeachingSession(txtPath: file.path);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Raw Speech Notes (.txt) saved to Downloads & Session History:\n${file.path}'),
-                          backgroundColor: Colors.brown.shade800,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-
-                  } catch (e) {
-                    debugPrint('Download error: $e');
-                  }
-                },
-                backgroundColor: Colors.brown.shade800,
-                borderRadius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                boxShadow: const [],
-                child: const Row(
-                  children: [
-                    Icon(Icons.text_snippet, color: Colors.white, size: 14),
-                    SizedBox(width: 4),
-                    Text('.TXT Notes', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              AnimatedPressButton(
-                onPressed: () => _showExportConfirmationDialog(context, appState),
-                backgroundColor: AppTheme.deepCrimson,
-                borderRadius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                boxShadow: const [],
-                child: const Row(
-                  children: [
-                    Icon(Icons.file_download, color: Colors.white, size: 14),
-                    SizedBox(width: 4),
-                    Text('.DOCX Study Material', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              AnimatedPressButton(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (dialogCtx) => AlertDialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      title: Text(isHindiUi ? 'नोट्स साफ़ करें?' : 'Clear Session Notes?'),
-                      content: Text(isHindiUi
-                          ? 'क्या आप इस सत्र के सभी भाषण नोट्स को हटाना चाहते हैं?'
-                          : 'Are you sure you want to clear all recorded notes for this session?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(dialogCtx).pop(false),
-                          child: Text(isHindiUi ? 'रद्द करें' : 'Cancel'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade800,
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () => Navigator.of(dialogCtx).pop(true),
-                          child: Text(isHindiUi ? 'साफ़ करें' : 'Clear'),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm == true) {
-                    await appState.clearSessionNotes();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(isHindiUi ? 'सत्र के नोट्स साफ़ कर दिए गए हैं।' : 'Session notes cleared successfully!'),
-                          backgroundColor: Colors.red.shade800,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  }
-                },
-                backgroundColor: Colors.red.shade900,
-                borderRadius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                boxShadow: const [],
-                child: Row(
-                  children: [
-                    const Icon(Icons.delete_sweep, color: Colors.white, size: 14),
-                    const SizedBox(width: 4),
-                    Text(isHindiUi ? 'साफ़ करें' : 'Clear Notes',
-                        style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ],
           ],
         ),
+        if (logs.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                AnimatedPressButton(
+                  onPressed: () => _showInlineNotesViewDialog(context, appState),
+                  backgroundColor: Colors.teal.shade800,
+                  borderRadius: 14,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  boxShadow: const [],
+                  child: const Row(
+                    children: [
+                      Icon(Icons.visibility, color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text('View Notes', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                AnimatedPressButton(
+                  onPressed: () async {
+                    try {
+                      final file = await NotesGeneratorService.downloadLiveHindiNotesTxt(
+                        sessionLogs: appState.sessionLogs,
+                        targetLanguage: appState.targetLanguage,
+                        lessonTopic: appState.currentLessonTopic,
+                        teacherName: appState.teacherName,
+                        teacherSchool: appState.teacherSchool,
+                        teacherDesignation: appState.teacherDesignation,
+                        teacherEmail: appState.teacherEmail,
+                      );
+                      await appState.saveCurrentTeachingSession(txtPath: file.path);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Raw Speech Notes (.txt) saved to Downloads & Session History:\n${file.path}'),
+                            backgroundColor: Colors.brown.shade800,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+
+                    } catch (e) {
+                      debugPrint('Download error: $e');
+                    }
+                  },
+                  backgroundColor: Colors.brown.shade800,
+                  borderRadius: 14,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  boxShadow: const [],
+                  child: const Row(
+                    children: [
+                      Icon(Icons.text_snippet, color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text('.TXT Notes', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                AnimatedPressButton(
+                  onPressed: () => _showExportConfirmationDialog(context, appState),
+                  backgroundColor: AppTheme.deepCrimson,
+                  borderRadius: 14,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  boxShadow: const [],
+                  child: const Row(
+                    children: [
+                      Icon(Icons.file_download, color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text('.DOCX Study Material', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                AnimatedPressButton(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (dialogCtx) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        title: Text(isHindiUi ? 'नोट्स साफ़ करें?' : 'Clear Session Notes?'),
+                        content: Text(isHindiUi
+                            ? 'क्या आप इस सत्र के सभी भाषण नोट्स को हटाना चाहते हैं?'
+                            : 'Are you sure you want to clear all recorded notes for this session?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogCtx).pop(false),
+                            child: Text(isHindiUi ? 'रद्द करें' : 'Cancel'),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade800,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () => Navigator.of(dialogCtx).pop(true),
+                            child: Text(isHindiUi ? 'साफ़ करें' : 'Clear'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      await appState.clearSessionNotes();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(isHindiUi ? 'सत्र के नोट्स साफ़ कर दिए गए हैं।' : 'Session notes cleared successfully!'),
+                            backgroundColor: Colors.red.shade800,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  backgroundColor: Colors.red.shade900,
+                  borderRadius: 14,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  boxShadow: const [],
+                  child: Row(
+                    children: [
+                      const Icon(Icons.delete_sweep, color: Colors.white, size: 14),
+                      const SizedBox(width: 4),
+                      Text(isHindiUi ? 'साफ़ करें' : 'Clear Notes',
+                          style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 10),
         if (logs.isEmpty)
           Container(

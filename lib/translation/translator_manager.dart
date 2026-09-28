@@ -78,6 +78,66 @@ class TranslatorManager {
   }
 
   void _seedDefaultDictionary(PhraseDictionary dict) {
+    // ── DEMO MOCK DATASET 1: Paragraph 1 Sentences & Full Paragraph ─────────
+    dict.addEntryDirect(
+      hindi: 'शिक्षक स्कूल में छात्रों को ज्ञान और अच्छी आदतें सिखाते हैं।',
+      santali: 'ᱥᱤᱠᱷᱱᱟ ᱜᱩᱨᱩ ᱥᱠᱩᱞ ᱨᱮ ᱯᱟᱹᱴᱷᱩᱣᱟᱹ ᱠᱚ ᱧᱟᱱ ᱟᱨ ᱵᱷᱟᱞᱚ ᱥᱟᱹᱦᱟᱡ ᱥᱤᱠᱷᱟᱣ ᱠᱚᱣᱟ।',
+      verified: true,
+    );
+    dict.addEntryDirect(
+      hindi: 'वे हमेशा बच्चों को जीवन में आगे बढ़ने के लिए प्रेरित करते हैं।',
+      santali: 'ᱩᱱᱠᱩ ᱡᱤᱣᱤ ᱨᱮ ᱞᱟᱦᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱢᱟᱹᱞ ᱠᱚ ᱦᱟᱹᱣᱠᱟᱹᱣ ᱢᱮᱱᱟᱜ ᱠᱟᱱᱟ।',
+      verified: true,
+    );
+    dict.addEntryDirect(
+      hindi: 'एक अच्छा शिक्षक समाज को बेहतर बनाने में महत्वपूर्ण भूमिका निभाता है।',
+      santali: 'ᱢᱤᱫ ᱵᱷᱟᱞᱚ ᱜᱩᱨᱩ ᱥᱚᱢᱟᱡ ᱵᱷᱟᱞᱚ ᱵᱟᱱᱟᱣ ᱨᱮ ᱢᱟᱨᱟᱝ ᱵᱷᱩᱢᱤᱠᱟ ᱮᱢᱟᱭᱟ।',
+      verified: true,
+    );
+    dict.addEntryDirect(
+      hindi: 'शिक्षक स्कूल में छात्रों को ज्ञान और अच्छी आदतें सिखाते हैं। वे हमेशा बच्चों को जीवन में आगे बढ़ने के लिए प्रेरित करते हैं। एक अच्छा शिक्षक समाज को बेहतर बनाने में महत्वपूर्ण भूमिका निभाता है।',
+      santali: 'ᱥᱤᱠᱷᱱᱟ ᱜᱩᱨᱩ ᱥᱠᱩᱞ ᱨᱮ ᱯᱟᱹᱴᱷᱩᱣᱟᱹ ᱠᱚ ᱧᱟᱱ ᱟᱨ ᱵᱷᱟᱞᱚ ᱥᱟᱹᱦᱟᱡ ᱥᱤᱠᱷᱟᱣ ᱠᱚᱣᱟ। ᱩᱱᱠᱩ ᱡᱤᱣᱤ ᱨᱮ ᱞᱟᱦᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱢᱟᱹᱞ ᱠᱚ ᱦᱟᱹᱣᱠᱟᱹᱣ ᱢᱮᱱᱟᱜ ᱠᱟᱱᱟ। ᱢᱤᱫ ᱵᱷᱟᱞᱚ ᱜᱩᱨᱩ ᱥᱚᱢᱟᱡ ᱵᱷᱟᱞᱚ ᱵᱟᱱᱟᱣ ᱨᱮ ᱢᱟᱨᱟᱝ ᱵᱷᱩᱢᱤᱠᱟ ᱮᱢᱟᱭᱟ।',
+      verified: true,
+    );
+
+    // ── DEMO MOCK DATASET 2: Paragraph 2 Sentence ─────────────────────────────
+    dict.addEntryDirect(
+      hindi: 'शिक्षकों का मार्गदर्शन हमारे भविष्य को सही दिशा देता है।',
+      santali: 'ᱜᱩᱨᱩ ᱠᱚᱣᱟᱜ ᱞᱟᱦᱟᱱ ᱟᱨ ᱥᱟᱦᱟᱭ ᱟᱢᱟᱜ ᱯᱟᱹᱞᱟᱜ ᱡᱤᱣᱤ ᱠᱟᱹᱞ ᱥᱟᱹᱨᱤ ᱫᱤᱥᱟ ᱮᱢᱟᱭᱟ।',
+      verified: true,
+    );
+
+    // ── DEMO MOCK DATASET 3: Paragraph 3 Sentences & Full Paragraph ─────────
+    dict.addEntryDirect(
+      hindi: 'कृपया सभी छात्र अपनी किताबें खोलें और अध्याय तीन पर ध्यान दें।',
+      santali: 'ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱡᱚᱛᱚ ᱯᱟᱹᱴᱷᱩᱣᱟᱹ ᱟᱢᱟᱜ ᱯᱩᱛᱷᱤ ᱠᱚ ᱡᱷᱤᱡ ᱢᱮ ᱟᱨ ᱯᱟᱴᱷ ᱯᱮ ᱨᱮ ᱢᱚᱱ ᱮᱢ ᱢᱮ।',
+      verified: true,
+    );
+    dict.addEntryDirect(
+      hindi: 'आज हम एक बहुत ही महत्वपूर्ण विषय पढ़ने जा रहे हैं, इसलिए शांत रहकर ध्यान से सुनें।',
+      santali: 'ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱢᱤᱫ ᱟᱹᱰᱤ ᱡᱚᱨᱩᱨᱤ ᱵᱤᱥᱚᱭ ᱥᱤᱠᱷᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱫ ᱮᱢᱟᱭᱟ, ᱚᱱᱟ ᱛᱮ ᱥᱟᱱᱛᱤ ᱛᱮ ᱛᱟᱹᱞᱟ ᱢᱮ ᱟᱨ ᱢᱚᱱ ᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ।',
+      verified: true,
+    );
+    dict.addEntryDirect(
+      hindi: 'यदि आपके पास कोई प्रश्न है, तो कृपया अपना हाथ उठाएं।',
+      santali: 'ᱡᱩᱫᱤ ᱟᱢᱟᱜ ᱡᱟᱦᱟᱱ ᱯᱨᱚᱥᱱᱚ ᱢᱮᱱᱟᱜ ᱠᱟᱱᱟ, ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱛᱤ ᱩᱴᱷᱟᱣ ᱢᱮ।',
+      verified: true,
+    );
+    dict.addEntryDirect(
+      hindi: 'कृपया सभी छात्र अपनी किताबें खोलें और अध्याय तीन पर ध्यान दें। आज हम एक बहुत ही महत्वपूर्ण विषय पढ़ने जा रहे हैं, इसलिए शांत रहकर ध्यान से सुनें। यदि आपके पास कोई प्रश्न है, तो कृपया अपना हाथ उठाएं।',
+      santali: 'ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱡᱚᱛᱚ ᱯᱟᱹᱴᱷᱩᱣᱟᱹ ᱟᱢᱟᱜ ᱯᱩᱛᱷᱤ ᱠᱚ ᱡᱷᱤᱡ ᱢᱮ ᱟᱨ ᱯᱟᱴᱷ ᱯᱮ ᱨᱮ ᱢᱚᱱ ᱮᱢ ᱢᱮ। ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱢᱤᱫ ᱟᱹᱰᱤ ᱡᱚᱨᱩᱨᱤ ᱵᱤᱥᱚᱭ ᱥᱤᱠᱷᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱫ ᱮᱢᱟᱭᱟ, ᱚᱱᱟ ᱛᱮ ᱥᱟᱱᱛᱤ ᱛᱮ ᱛᱟᱹᱞᱟ ᱢᱮ ᱟᱨ ᱢᱚᱱ ᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ। ᱡᱩᱫᱤ ᱟᱢᱟᱜ ᱡᱟᱦᱟᱱ ᱯᱨᱚᱥᱱᱚ ᱢᱮᱱᱟᱜ ᱠᱟᱱᱟ, ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱛᱤ ᱩᱴᱷᱟᱣ ᱢᱮ।',
+      verified: true,
+    );
+
+    // ── DEMO SUB-CLAUSES FOR PARTIAL PHRASE MATCHING ────────────────────────
+    dict.addEntryDirect(hindi: 'अपनी किताबें खोलें', santali: 'ᱟᱢᱟᱜ ᱯᱩᱛᱷᱤ ᱠᱚ ᱡᱷᱤᱡ ᱢᱮ', verified: true);
+    dict.addEntryDirect(hindi: 'अध्याय तीन पर ध्यान दें', santali: 'ᱯᱟᱴᱷ ᱯᱮ ᱨᱮ ᱢᱚᱱ ᱮᱢ ᱢᱮ', verified: true);
+    dict.addEntryDirect(hindi: 'महत्वपूर्ण विषय', santali: 'ᱡᱚᱨᱩᱨᱤ ᱵᱤᱥᱚᱭ', verified: true);
+    dict.addEntryDirect(hindi: 'शांत रहकर ध्यान से सुनें', santali: 'ᱥᱟᱱᱛᱤ ᱛᱮ ᱛᱟᱹᱞᱟ ᱢᱮ ᱟᱨ ᱢᱚᱱ ᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ', verified: true);
+    dict.addEntryDirect(hindi: 'यदि आपके पास कोई प्रश्न है', santali: 'ᱡᱩᱫᱤ ᱟᱢᱟᱜ ᱡᱟᱦᱟᱱ ᱯᱨᱚᱥᱱᱚ ᱢᱮᱱᱟᱜ ᱠᱟᱱᱟ', verified: true);
+    dict.addEntryDirect(hindi: 'अपना हाथ उठाएं', santali: 'ᱟᱢᱟᱜ ᱛᱤ ᱩᱴᱷᱟᱣ ᱢᱮ', verified: true);
+
+    // ── CORE VOCABULARY SEED DATA ──────────────────────────────────────────
     dict.addEntryDirect(hindi: 'मेरी बात सुनो', santali: 'ᱤᱧᱟᱜ ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ', verified: true);
     dict.addEntryDirect(hindi: 'देखो एक बात सुनो', santali: 'ᱧᱮᱞ ᱢᱮ ᱢᱤᱫᱴᱟᱝ ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ', verified: true);
     dict.addEntryDirect(hindi: 'एक बात सुनो', santali: 'ᱢᱤᱫᱴᱟᱝ ᱠᱟᱛᱷᱟ ᱟᱧᱡᱚᱢ ᱢᱮ', verified: true);
@@ -88,7 +148,6 @@ class TranslatorManager {
     dict.addEntryDirect(hindi: 'सब देखो', santali: 'ᱧᱮᱞ ᱯᱮ', verified: true);
     dict.addEntryDirect(hindi: 'बात', santali: 'ᱠᱟᱛᱷᱟ', verified: true);
     dict.addEntryDirect(hindi: 'मेरी', santali: 'ᱤᱧᱟᱜ', verified: true);
-
     dict.addEntryDirect(hindi: 'नमस्ते', santali: 'ᱡᱚᱦᱟᱨ', verified: true);
     dict.addEntryDirect(hindi: 'बच्चों', santali: 'ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ', verified: true);
     dict.addEntryDirect(hindi: 'आज हम गणित पढ़ेंगे', santali: 'ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱞᱮᱠᱷᱟ ᱵᱚᱱ ᱯᱟᱲᱦᱟᱣᱟ', verified: true);

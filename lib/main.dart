@@ -73,7 +73,7 @@ class _MainNavigationFrameState extends State<MainNavigationFrame> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.deepCrimson),
             ),
             Text(
-              'SIH26042 • Real-Time AI Platform (${appState.targetLanguage.displayName})',
+              'Real-Time AI Platform (${appState.targetLanguage.displayName})',
               style: const TextStyle(fontSize: 10, color: AppTheme.textDark, fontWeight: FontWeight.w600),
             ),
           ],

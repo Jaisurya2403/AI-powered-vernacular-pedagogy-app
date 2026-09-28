@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import '../engine/ol_chiki_transliteration.dart';
 
 // ---------------------------------------------------------------------
 // Data model
@@ -61,6 +62,16 @@ class PhraseDictionary {
       reversePhraseMap[santaliNorm] = hindi;
     }
     reverseExactMap[santaliTrim] = hindi;
+
+    final devanagariSantali = OlChikiTransliteration.toDevanagari(santaliTrim);
+    final devNorm = Normalizer.normalize(devanagariSantali);
+    if (devNorm.isNotEmpty && devNorm != santaliNorm) {
+      reverseExactMap[devNorm] = hindi;
+      reversePhraseMap[devNorm] = hindi;
+    }
+    if (devanagariSantali.trim().isNotEmpty) {
+      reverseExactMap[devanagariSantali.trim()] = hindi;
+    }
 
     final wordCount = Normalizer.tokenize(hindiNorm).length;
     if (wordCount > maxPhraseLenWords) maxPhraseLenWords = wordCount;
@@ -204,21 +215,54 @@ class FuzzyMatcher {
   static PhraseEntry? findClosest(
     String normalizedInput,
     Map<String, PhraseEntry> exactSentenceMap, {
-    double maxDistanceRatio = 0.20,
+    double maxDistanceRatio = 0.25,
+    double minTokenOverlapRatio = 0.50,
   }) {
+    if (normalizedInput.isEmpty || exactSentenceMap.isEmpty) return null;
+
+    final inputTokens = Normalizer.tokenize(normalizedInput).toSet();
+    if (inputTokens.isEmpty) return null;
+
     PhraseEntry? best;
-    int bestDist = 1 << 30;
-    for (final key in exactSentenceMap.keys) {
-      if ((key.length - normalizedInput.length).abs() > key.length * 0.3) continue;
-      final dist = levenshtein(normalizedInput, key);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = exactSentenceMap[key];
+    double bestScore = 0.0;
+
+    for (final entry in exactSentenceMap.entries) {
+      final key = entry.key;
+      final phraseEntry = entry.value;
+
+      final keyTokens = Normalizer.tokenize(key).toSet();
+      if (keyTokens.isEmpty) continue;
+
+      // 1. Token overlap Jaccard-style ratio
+      final intersectionCount = inputTokens.intersection(keyTokens).length;
+      final maxTokens = inputTokens.length > keyTokens.length ? inputTokens.length : keyTokens.length;
+      final tokenOverlapRatio = intersectionCount / maxTokens;
+
+      // 2. Levenshtein ratio
+      double levRatio = 0.0;
+      if ((key.length - normalizedInput.length).abs() <= key.length * 0.45) {
+        final dist = levenshtein(normalizedInput, key);
+        final maxLen = normalizedInput.length > key.length ? normalizedInput.length : key.length;
+        levRatio = 1.0 - (dist / maxLen.clamp(1, 1 << 30));
+      }
+
+      final effectiveTokenRatio = tokenOverlapRatio >= minTokenOverlapRatio ? tokenOverlapRatio : 0.0;
+      final effectiveLevRatio = levRatio >= (1.0 - maxDistanceRatio) ? levRatio : 0.0;
+
+      double combinedScore = (effectiveTokenRatio > effectiveLevRatio) ? effectiveTokenRatio : effectiveLevRatio;
+
+      // Give extra bonus to verified (demo mock data) entries to take precedence
+      if (combinedScore > 0 && phraseEntry.verified) {
+        combinedScore += 0.05;
+      }
+
+      if (combinedScore > bestScore) {
+        bestScore = combinedScore;
+        best = phraseEntry;
       }
     }
-    if (best == null) return null;
-    final ratio = bestDist / normalizedInput.length.clamp(1, 1 << 30);
-    return ratio <= maxDistanceRatio ? best : null;
+
+    return bestScore >= 0.45 ? best : null;
   }
 }
 
@@ -516,8 +560,15 @@ class HindiSantaliTranslator {
       return TranslationResult('', 'exact', [], latencyMs: stopwatch.elapsedMicroseconds / 1000.0);
     }
 
+    final devanagariSantali = OlChikiTransliteration.toDevanagari(santaliText);
+    final devNorm = Normalizer.normalize(devanagariSantali);
+
     // 1. Exact match in reverse dictionary
-    final exactHindi = dict.reverseExactMap[normalized] ?? dict.reverseExactMap[santaliText.trim()];
+    final exactHindi = dict.reverseExactMap[normalized] ??
+        dict.reverseExactMap[santaliText.trim()] ??
+        dict.reverseExactMap[devNorm] ??
+        dict.reverseExactMap[devanagariSantali.trim()];
+
     if (exactHindi != null) {
       stopwatch.stop();
       return TranslationResult(
@@ -535,7 +586,12 @@ class HindiSantaliTranslator {
 
     for (final token in tokens) {
       final normToken = Normalizer.normalize(token);
-      final mappedHindi = dict.reversePhraseMap[normToken] ?? dict.reversePhraseMap[token];
+      final devToken = Normalizer.normalize(OlChikiTransliteration.toDevanagari(token));
+
+      final mappedHindi = dict.reversePhraseMap[normToken] ??
+          dict.reversePhraseMap[token] ??
+          dict.reversePhraseMap[devToken];
+
       if (mappedHindi != null) {
         translatedTokens.add(mappedHindi);
       } else {
